@@ -21,7 +21,17 @@
     P7 -> C4
 
   First run TEST 01 and replace PCF_ADDRESS.
-*/
+
+  TEST INPUT / ACTION:
+    Set PCF_ADDRESS, open Serial Monitor at 9600 baud, and press/release
+    every key once: 1-9, 0, A-D, *, and #.
+
+  EXPECTED OUTPUT:
+    One line "Pressed: X" for each press, where X is the key label.
+
+  PASS CRITERIA / WHAT TO CHECK:
+    All 16 keys report the correct label exactly once per press. Wrong,
+    missing, repeated, or stuck keys indicate row/column/address wiring issues.*/
 
 #include <Wire.h>
 

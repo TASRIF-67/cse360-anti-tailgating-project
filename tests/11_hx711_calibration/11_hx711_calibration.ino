@@ -17,7 +17,18 @@
   HX711 -> UNO:
     DOUT -> D3
     SCK  -> D4
-*/
+
+  TEST INPUT / ACTION:
+    Set KNOWN_WEIGHT_GRAMS accurately. Start with the platform empty;
+    when instructed, place that weight on it and leave it still.
+
+  EXPECTED OUTPUT:
+    Serial reports tare, waits 8 seconds, prints the unscaled average and
+    approximate calibration factor, then repeats "Weight = N.N g".
+
+  PASS CRITERIA / WHAT TO CHECK:
+    Printed weight is close to the known value and stable. Record the
+    factor, then measure empty, normal-model, and excessive-load ranges.*/
 
 #include <HX711.h>
 

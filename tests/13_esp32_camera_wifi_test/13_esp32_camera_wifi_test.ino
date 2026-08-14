@@ -12,7 +12,19 @@
 
   After boot, open the printed IP address in a browser.
   The root page shows a link to /capture.
-*/
+
+  TEST INPUT / ACTION:
+    Enter WIFI_SSID/WIFI_PASSWORD, upload with the correct ESP32-CAM board
+    settings, boot normally, and open Serial Monitor at 9600 baud. Browse
+    to the printed IP address and select /capture.
+
+  EXPECTED OUTPUT:
+    Serial prints Wi-Fi connection progress and "Open: http://<IP>". The root
+    page loads, and /capture returns a current JPEG image.
+
+  PASS CRITERIA / WHAT TO CHECK:
+    Connection completes, the page is reachable on the same network, and
+    repeated captures are valid images. Camera-init failure or HTTP 500 fails.*/
 
 #include <WiFi.h>
 #include <WebServer.h>

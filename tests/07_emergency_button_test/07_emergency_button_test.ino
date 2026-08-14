@@ -14,7 +14,18 @@
   Expected:
     released -> HIGH
     pressed  -> LOW
-*/
+
+  TEST INPUT / ACTION:
+    Open Serial Monitor at 9600 baud. Leave the emergency button
+    released, press and hold it, then release it several times.
+
+  EXPECTED OUTPUT:
+    Released prints "Button released"; pressed prints
+    "EMERGENCY BUTTON PRESSED".
+
+  PASS CRITERIA / WHAT TO CHECK:
+    Pressed always reads LOW and released always reads HIGH, with no
+    stuck or intermittent state.*/
 
 
 const byte PIN_EMERGENCY = 2;

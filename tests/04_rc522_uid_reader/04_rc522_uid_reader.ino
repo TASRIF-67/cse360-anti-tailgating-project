@@ -16,7 +16,18 @@
 
   Open Serial Monitor at 9600 baud.
   Tap your card and copy the UID.
-*/
+
+  TEST INPUT / ACTION:
+    Open Serial Monitor at 9600 baud and place each RFID card/tag near
+    the RC522 antenna, one at a time.
+
+  EXPECTED OUTPUT:
+    Startup prints readiness text. Each detected card prints "UID:"
+    followed by its hexadecimal UID bytes separated by spaces.
+
+  PASS CRITERIA / WHAT TO CHECK:
+    The same card produces the same complete UID on repeated taps, and
+    each intended card is detected. Record authorized UIDs for firmware.*/
 
 #include <SPI.h>
 #include <MFRC522.h>

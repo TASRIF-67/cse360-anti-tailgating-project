@@ -15,7 +15,18 @@
     ESP_PONG
   whenever it receives:
     UNO_PING
-*/
+
+  TEST INPUT / ACTION:
+    Upload this sketch with UNO UART disconnected, boot normally, reconnect
+    UART, and run the matching UNO 12A sketch at 9600 baud.
+
+  EXPECTED OUTPUT:
+    ESP32 sends "ESP_UART_READY" once and sends "ESP_PONG" for every complete
+    "UNO_PING" line received from the UNO.
+
+  PASS CRITERIA / WHAT TO CHECK:
+    The UNO monitor receives one clean ESP_PONG per ping. Repeated success
+    verifies bidirectional communication and the UNO-to-ESP32 level shifting.*/
 
 
 String line = "";

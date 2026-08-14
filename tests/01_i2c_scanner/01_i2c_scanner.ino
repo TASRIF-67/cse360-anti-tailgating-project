@@ -13,7 +13,18 @@
     UNO GND -> LCD GND + PCF8574 GND
 
   Open Serial Monitor at 9600 baud.
-*/
+
+  TEST INPUT / ACTION:
+    Power the wired LCD backpack and PCF8574, then open Serial Monitor
+    at 9600 baud. No keyboard input is required.
+
+  EXPECTED OUTPUT:
+    "Scanning I2C bus...", one "Found device at 0xNN" line per
+    responding module, and "Total devices found: N" every cycle.
+
+  PASS CRITERIA / WHAT TO CHECK:
+    Both modules appear consistently at stable, different addresses.
+    "No I2C devices found" or changing addresses means wiring/power failed.*/
 
 #include <Wire.h>
 

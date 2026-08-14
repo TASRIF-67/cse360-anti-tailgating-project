@@ -26,7 +26,19 @@
     Gate A open
     Gate B closed
     Gate B open
-*/
+
+  TEST INPUT / ACTION:
+    Use separate servo power/common ground and open Serial Monitor at
+    9600 baud. Send 1 or 2 to select a gate, + or - to move 5 degrees,
+    and p to print both angles.
+
+  EXPECTED OUTPUT:
+    The selected servo moves in 5-degree steps. Serial reports selection
+    and prints "Gate A angle = N" and "Gate B angle = N".
+
+  PASS CRITERIA / WHAT TO CHECK:
+    Find collision-free open/closed angles for both gates; Gate A closed
+    must press A1. Record all four angles and stop if a servo binds.*/
 
 #include <Servo.h>
 

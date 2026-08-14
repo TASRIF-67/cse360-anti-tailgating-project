@@ -11,7 +11,18 @@
   Expected:
     switch released -> HIGH -> Gate A NOT confirmed closed
     switch pressed  -> LOW  -> Gate A CLOSED confirmed
-*/
+
+  TEST INPUT / ACTION:
+    Open Serial Monitor at 9600 baud. Release the Gate A CLOSED switch,
+    then press and release it several times by hand with the servo off.
+
+  EXPECTED OUTPUT:
+    Released prints "RELEASED -> Gate A NOT CLOSED"; pressed prints
+    "PRESSED -> Gate A CLOSED".
+
+  PASS CRITERIA / WHAT TO CHECK:
+    The message changes immediately and consistently with switch state.
+    Gate A must physically press this switch at its closed servo angle.*/
 
 
 const byte PIN_GATE_A_CLOSED = A1;
