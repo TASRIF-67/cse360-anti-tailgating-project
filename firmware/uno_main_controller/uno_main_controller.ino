@@ -86,6 +86,12 @@
 
   5. Test whether your FC-51 sensors are active LOW or active HIGH.
 
+  PRACTICAL VERIFICATION:
+    After isolated tests pass, follow docs/PRACTICAL_DEMO_GUIDE.md for
+    power-on, denial, passage, tailgating, fault, emergency, and
+    ESP32-independence scenarios. Gate B must never open until Gate A
+    CLOSED is verified and the chamber load is acceptable.
+
   ================================================================
 */
 

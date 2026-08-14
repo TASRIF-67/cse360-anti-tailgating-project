@@ -19,6 +19,8 @@ Run one isolated test at a time before uploading the final firmware.
 13. `13_esp32_camera_wifi_test`: verify camera capture and the local web page.
 14. Upload both final sketches from `firmware/` and test the full interlock.
 
+Use [`PRACTICAL_DEMO_GUIDE.md`](PRACTICAL_DEMO_GUIDE.md) for exact scenarios, pass/fail evidence, recovery, and the presentation checklist.
+
 Before final operation, update I2C addresses, authorized UIDs and PINs, servo
 angles, sensor polarity, Wi-Fi credentials, and load-cell calibration values.
 Keep `LOAD_CELL_CONFIGURED` false until calibration is complete.

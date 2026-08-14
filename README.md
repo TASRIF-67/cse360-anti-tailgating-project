@@ -29,6 +29,8 @@ There are **two microcontrollers**, so the final project should use **two final 
 
 The `tests/` folder contains small sketches that should be run **before** the final firmware.
 
+For the real-hardware procedure and evaluator demo, follow [`docs/PRACTICAL_DEMO_GUIDE.md`](docs/PRACTICAL_DEMO_GUIDE.md).
+
 ## Recommended testing order
 
 1. `01_i2c_scanner`

@@ -57,6 +57,11 @@
     3. Boot normally.
     4. Reconnect UNO A2/A3 UART wires.
 
+  PRACTICAL VERIFICATION:
+    Follow docs/PRACTICAL_DEMO_GUIDE.md. Verify the web event and
+    /last-photo for denial, tailgating, fault, and emergency, then
+    show that UNO safety remains independent when ESP32 is offline.
+
   ================================================================
 */
 
