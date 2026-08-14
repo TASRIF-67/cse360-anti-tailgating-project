@@ -1,0 +1,1495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Anti-Tailgating Security Interlock Gate — Final Beginner Build Guide</title>
+<style>
+:root{
+  --bg:#f5f7fb; --panel:#ffffff; --ink:#18212f; --muted:#5e6a7d;
+  --line:#dbe2ec; --accent:#2457c5; --accent2:#0f7b6c;
+  --warn:#9a5b00; --warnbg:#fff6df; --danger:#a22727; --dangerbg:#fff0f0;
+  --ok:#176a42; --okbg:#edf9f2; --code:#111827;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font:15px/1.58 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg)}
+header{background:linear-gradient(135deg,#173d91,#2457c5);color:white;padding:34px 24px 28px}
+header .wrap{max-width:1180px;margin:auto}
+h1{font-size:32px;line-height:1.15;margin:0 0 8px}
+.subtitle{font-size:16px;opacity:.92;max-width:900px}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.badge{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.27);padding:5px 10px;border-radius:999px;font-size:12px}
+.layout{max-width:1180px;margin:22px auto;display:grid;grid-template-columns:260px minmax(0,1fr);gap:20px;padding:0 16px}
+nav{position:sticky;top:12px;align-self:start;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
+nav a{display:block;color:#31405a;text-decoration:none;padding:7px 8px;border-radius:8px;font-size:13px}
+nav a:hover{background:#eef3ff;color:var(--accent)}
+.progress{height:9px;background:#edf0f5;border-radius:999px;overflow:hidden;margin:9px 6px 12px}
+.progress>div{height:100%;width:0;background:var(--accent2);transition:.2s}
+main{min-width:0}
+section{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:18px;box-shadow:0 2px 8px rgba(25,42,70,.035)}
+h2{font-size:23px;margin:0 0 14px;color:#173d91}
+h3{font-size:18px;margin:20px 0 8px}
+h4{font-size:15px;margin:14px 0 6px}
+p{margin:8px 0}
+small,.muted{color:var(--muted)}
+.note,.warning,.danger,.success{padding:12px 14px;border-radius:10px;margin:12px 0;border-left:4px solid}
+.note{background:#eef4ff;border-color:#3569d4}
+.warning{background:var(--warnbg);border-color:#d18a13}
+.danger{background:var(--dangerbg);border-color:#cf4949}
+.success{background:var(--okbg);border-color:#2e9564}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th,td{border:1px solid var(--line);padding:8px 9px;vertical-align:top}
+th{background:#f0f4fa;text-align:left}
+tr:nth-child(even) td{background:#fbfcfe}
+code{background:#eef2f7;padding:1px 5px;border-radius:5px}
+pre{background:var(--code);color:#e8edf7;padding:14px;border-radius:10px;overflow:auto;font-size:12px;line-height:1.5}
+.step{border:1px solid var(--line);border-radius:12px;padding:15px;margin:12px 0;background:#fcfdff}
+.stephead{display:flex;gap:10px;align-items:flex-start}
+.stepnum{flex:0 0 31px;height:31px;display:grid;place-items:center;border-radius:50%;background:#e9f0ff;color:#1747a4;font-weight:700}
+.check{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line);font-size:13px;color:#3f4b5d}
+.check input{transform:translateY(1px)}
+.wires{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}
+.wirebox{border:1px solid var(--line);border-radius:10px;padding:11px;background:#fafcff}
+.wirebox b{display:block;margin-bottom:4px}
+.diagram{border:1px solid var(--line);border-radius:12px;padding:16px;background:#fbfdff;overflow:auto}
+.flow{display:flex;align-items:center;gap:8px;min-width:760px}
+.node{padding:9px 12px;border:1px solid #b8c6de;background:white;border-radius:9px;text-align:center;white-space:nowrap}
+.arrow{font-size:20px;color:#6480ad}
+.bodymap{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:8px;min-width:680px}
+.zone{min-height:170px;border:2px solid #8ea2c3;border-radius:12px;padding:12px;background:white;position:relative}
+.gate{position:absolute;top:0;bottom:0;width:8px;background:#2457c5}
+.gate.left{left:-6px}.gate.right{right:-6px}
+.label{font-weight:700;color:#173d91}
+.pin{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.todo{border:1px solid #ffd17a;background:#fff9ea;border-radius:10px;padding:11px}
+.status-required,.status-recommended,.status-optional,.status-spare,.status-unused{
+display:inline-block;font-weight:700;font-size:11px;padding:3px 7px;border-radius:999px;white-space:nowrap
+}
+.status-required{background:#e8f7ef;color:#176a42;border:1px solid #a8dec1}
+.status-recommended{background:#eef4ff;color:#2457c5;border:1px solid #b8caf1}
+.status-optional{background:#fff5df;color:#8a5900;border:1px solid #e8c477}
+.status-spare{background:#f3f1f8;color:#5a447f;border:1px solid #cec4df}
+.status-unused{background:#f5f5f5;color:#60656f;border:1px solid #d5d9df}
+.parts-card{border:1px solid var(--line);border-radius:12px;padding:14px;background:#fbfdff;margin:12px 0}
+.parts-card h3,.parts-card h4{margin-top:0;color:#173d91}
+.mini-diagram{background:#111827;color:#e8edf7;border-radius:9px;padding:12px;overflow:auto;font:12px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace}
+footer{max-width:1180px;margin:20px auto 40px;padding:0 16px;color:var(--muted);font-size:12px}
+@media (max-width:900px){
+ .layout{grid-template-columns:1fr} nav{position:static}.two,.wires{grid-template-columns:1fr}
+}
+@media print{
+ nav,.progress{display:none}.layout{display:block;max-width:none}.layout,footer{padding:0}
+ body{background:white}section{break-inside:avoid;box-shadow:none}.step{break-inside:avoid}
+ header{background:white;color:black;border-bottom:2px solid #333;padding:16px 0}
+ .badge{border:1px solid #aaa;color:#222}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>Arduino UNO + ESP32‑AI‑CAM Anti‑Tailgating Security Interlock Gate — Complete Build Guide</h1>
+    <div class="subtitle">Beginner build guide for the current prototype: RFID + PIN authentication, two servo gates, chamber sensing with two IR sensors and a 1&nbsp;kg load cell, emergency release, alarm, ESP32‑AI‑CAM, and a simple shoebox body. This version is written specifically for a breadboard build with no separate power-distribution rail and no fuse currently available. It also explains every small purchased part and clearly marks which parts are mandatory, recommended, optional or spare.</div>
+    <div class="badges">
+      <span class="badge">Controller: Arduino UNO R3</span>
+      <span class="badge">Body: Shoebox</span>
+      <span class="badge">Keypad via PCF8574</span>
+      <span class="badge">RC522 protected by CD4050</span>
+      <span class="badge">Current stock: 1 limit switch</span>
+      <span class="badge">Servo power: dedicated breadboard rails</span>
+      <span class="badge">ESP32‑AI‑CAM: included</span>
+      <span class="badge">RTC / microSD: omitted</span>
+      <span class="badge">Fuse: optional upgrade, currently omitted</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+<nav>
+  <strong>Build sequence</strong>
+  <div class="progress"><div id="bar"></div></div>
+  <a href="#status">1. What you have / limitations</a>
+  <a href="#architecture">2. System architecture</a>
+  <a href="#simple">2A. Simplest build path</a>
+  <a href="#protocols">2B. Protocols used</a>
+  <a href="#pinmap">3. Final UNO pin map</a>
+  <a href="#power">4. Power wiring</a>
+  <a href="#smallparts">4A. Every small item explained</a>
+  <a href="#solderless">4B. Solderless build notes</a>
+  <a href="#body">5. Shoebox body</a>
+  <a href="#breadboard">6. Breadboard setup</a>
+  <a href="#cd4050">7. CD4050 + RC522</a>
+  <a href="#i2c">8. LCD + PCF8574 + keypad</a>
+  <a href="#hx711">9. Load cell + HX711</a>
+  <a href="#ir">10. IR sensors</a>
+  <a href="#servo">11. Servo gates</a>
+  <a href="#limit">12. Limit switch</a>
+  <a href="#emergency">13. Emergency button</a>
+  <a href="#buzzer">14. Buzzer</a>
+  <a href="#esp">15. ESP32‑AI‑CAM integration</a>
+  <a href="#setup">15A. UNO + ESP32 software setup</a>
+  <a href="#tests">16. Test one subsystem at a time</a>
+  <a href="#software">17. Final state machine</a>
+  <a href="#calibration">18. Calibration</a>
+  <a href="#demo">19. Demo checklist</a>
+  <a href="#upgrade">20. Final-compliance upgrades</a>
+</nav>
+
+<main>
+
+<section id="status">
+<h2>1. Final hardware inventory — required, recommended, optional and spare</h2>
+<p>This guide uses the parts from your final receipt plus the components you already had. The planned final prototype <b>includes ESP32‑AI‑CAM</b>. RTC and microSD are intentionally not used. The actual fuse was missing from the order, so the fuse holder is left out of the current circuit until a proper fuse is available.</p>
+
+<div class="note"><b>Status meanings:</b> <span class="status-required">REQUIRED</span> means needed for the final planned functionality. <span class="status-recommended">RECOMMENDED</span> means the circuit can work without it, but you should use it because it improves stability, safety or usability. <span class="status-optional">OPTIONAL</span> means you can leave it out completely if it does not suit your wiring. <span class="status-spare">SPARE</span> means keep it unused as backup.</div>
+
+<h3>Core modules and sensors</h3>
+<table>
+<tr><th>Item</th><th>Qty</th><th>Status</th><th>Exact purpose</th></tr>
+<tr><td>Arduino UNO R3</td><td>1</td><td><span class="status-required">REQUIRED</span></td><td>Main controller. Handles authentication, sensors, gate decisions, emergency handling and sends event messages to ESP32.</td></tr>
+<tr><td>Breadboard</td><td>1</td><td><span class="status-required">REQUIRED</span></td><td>Main solderless wiring platform. Its side rails are also used as the logic and servo distribution rails.</td></tr>
+<tr><td>Power bank</td><td>1</td><td><span class="status-required">REQUIRED</span></td><td>Powers the UNO through USB and can provide the logic-side 5&nbsp;V source.</td></tr>
+<tr><td>Separate regulated 5&nbsp;V source / battery</td><td>1</td><td><span class="status-required">REQUIRED</span></td><td>Powers the two SG90 servos separately from the UNO logic rail.</td></tr>
+<tr><td>RC522 RFID reader + card/tag</td><td>1 set</td><td><span class="status-required">REQUIRED</span></td><td>RFID credential. Communicates with UNO over SPI.</td></tr>
+<tr><td>4×4 membrane keypad</td><td>1</td><td><span class="status-required">REQUIRED</span></td><td>PIN entry. Its 8 row/column wires go to PCF8574 P0–P7.</td></tr>
+<tr><td>PCF8574 I/O expander</td><td>1</td><td><span class="status-required">REQUIRED</span></td><td>Saves UNO pins by handling the 4×4 keypad over I²C.</td></tr>
+<tr><td>16×2 I²C LCD</td><td>1</td><td><span class="status-required">REQUIRED</span></td><td>User prompts and status display.</td></tr>
+<tr><td>FC‑51 IR sensor</td><td>3</td><td><span class="status-required">USE 2</span> <span class="status-spare">1 SPARE</span></td><td>IR‑A at Gate A entrance and IR‑B at Gate B exit. Keep the third as replacement.</td></tr>
+<tr><td>SG90 servo</td><td>2</td><td><span class="status-required">REQUIRED</span></td><td>Gate A and Gate B actuators.</td></tr>
+<tr><td>1&nbsp;kg load cell</td><td>1</td><td><span class="status-required">REQUIRED</span></td><td>Measures the load on the security-chamber floor.</td></tr>
+<tr><td>HX711 module</td><td>1</td><td><span class="status-required">REQUIRED</span></td><td>Amplifies and digitizes the tiny load-cell signal.</td></tr>
+<tr><td>SPDT limit switch</td><td>1</td><td><span class="status-required">REQUIRED IN CURRENT DESIGN</span></td><td>Use as <b>Gate A CLOSED</b> verification. More switches would improve full gate-position feedback, but this one is enough for the current simplified prototype.</td></tr>
+<tr><td>Emergency push button</td><td>1</td><td><span class="status-required">REQUIRED</span></td><td>Emergency release input. UNO opens both gates and enters emergency state.</td></tr>
+<tr><td>Active buzzer</td><td>1</td><td><span class="status-required">REQUIRED</span></td><td>Audible warning for denial, possible tailgating, fault and emergency.</td></tr>
+<tr><td>ESP32‑AI‑CAM / AI‑Thinker ESP32‑CAM</td><td>1</td><td><span class="status-required">REQUIRED FOR FINAL VERSION</span></td><td>Camera + Wi‑Fi + event monitoring. It never decides whether Gate B opens.</td></tr>
+<tr><td>Jumper wires</td><td>Enough</td><td><span class="status-required">REQUIRED</span></td><td>Signal and low-current breadboard connections.</td></tr>
+<tr><td>Multimeter</td><td>1</td><td><span class="status-recommended">STRONGLY RECOMMENDED</span></td><td>Not part of the finished circuit, but used to verify 5&nbsp;V, 3.3&nbsp;V, polarity, continuity and switch operation.</td></tr>
+</table>
+
+<h3>Small purchased parts</h3>
+<table>
+<tr><th>Small item</th><th>Qty</th><th>Status</th><th>Use / non-use decision</th></tr>
+<tr><td>CD4050 hex buffer</td><td>1</td><td><span class="status-required">REQUIRED</span></td><td>Converts UNO 5&nbsp;V output logic to a safe 3.3&nbsp;V-class level for RC522 inputs and ESP32 RX.</td></tr>
+<tr><td>0.1&nbsp;µF ceramic capacitor</td><td>1</td><td><span class="status-recommended">RECOMMENDED — USE IT</span></td><td>Placed directly between CD4050 VCC and GND for decoupling. The circuit may appear to work without it, but there is no reason to omit it because you already have it.</td></tr>
+<tr><td>2200&nbsp;µF electrolytic capacitor</td><td>1</td><td><span class="status-recommended">RECOMMENDED — USE IT</span></td><td>Across the servo +5&nbsp;V and servo GND rails to reduce voltage dips when servos start/move.</td></tr>
+<tr><td>BC547 NPN transistor</td><td>2</td><td><span class="status-optional">OPTIONAL</span></td><td>Only needed if your buzzer is a bare 2-pin buzzer requiring a transistor driver. If you have a ready 3-pin buzzer module, do not use the BC547.</td></tr>
+<tr><td>10&nbsp;kΩ resistors</td><td>5</td><td><span class="status-optional">OPTIONAL / SPARE</span></td><td>Not needed for the emergency button or limit switch because the UNO uses <code>INPUT_PULLUP</code>. Can be kept as general pull-up/pull-down resistors.</td></tr>
+<tr><td>DPST rocker switch</td><td>1</td><td><span class="status-optional">OPTIONAL BUT USEFUL</span></td><td>Convenient ON/OFF switch for the servo supply. The project can still work without it by manually connecting/disconnecting servo power.</td></tr>
+<tr><td>5×20&nbsp;mm fuse holder</td><td>1</td><td><span class="status-optional">OPTIONAL FOR FUNCTION / RECOMMENDED FOR SAFETY</span></td><td>The actual fuse is missing. Leave the holder completely out of the current circuit. Never bridge it with wire.</td></tr>
+<tr><td>Actual 5×20&nbsp;mm fuse</td><td>0</td><td><span class="status-unused">NOT AVAILABLE</span></td><td>Not required for the prototype to function. Add later when the correct rating is known.</td></tr>
+<tr><td>DC barrel jack 5.5×2.1&nbsp;mm female adapter</td><td>1</td><td><span class="status-optional">OPTIONAL</span></td><td>Use only if your 5&nbsp;V servo source has a matching male barrel plug. Otherwise leave it unused.</td></tr>
+<tr><td>Micro‑USB power jack / breakout</td><td>1</td><td><span class="status-optional">OPTIONAL</span></td><td>Can be used as a convenient 5&nbsp;V/GND breakout from a power bank, especially for ESP32, if the board output is verified. It is not necessary if you already have a stable 5&nbsp;V connection.</td></tr>
+<tr><td>2-pin screw-terminal blocks</td><td>4</td><td><span class="status-optional">OPTIONAL</span></td><td>Useful for permanent/detachable power wiring. Many PCB terminal blocks require soldering, so skip them in a fully breadboard-only build if they do not fit securely.</td></tr>
+<tr><td>Red/black power wire</td><td>1&nbsp;m</td><td><span class="status-recommended">RECOMMENDED</span></td><td>Good for servo/battery power paths. Short jumper wires can still work for the tabletop prototype if connections remain secure.</td></tr>
+</table>
+
+<div class="success"><b>Minimum functional version:</b> you can complete the project without the fuse, fuse holder, barrel jack, micro‑USB breakout, screw-terminal blocks, BC547 and 10&nbsp;kΩ resistors. The rocker switch is also not mandatory. The two capacitors are technically not logic requirements, but they are strongly recommended and should be used because you already purchased them.</div>
+
+<div class="note"><b>RTC and microSD:</b> intentionally omitted from this final version. They are not part of the build described below.</div>
+</section>
+
+<section id="architecture">
+<h2>2. Understand the system before wiring</h2>
+<div class="diagram">
+  <div class="flow">
+    <div class="node">RFID card</div><span class="arrow">→</span>
+    <div class="node">PIN keypad</div><span class="arrow">→</span>
+    <div class="node">UNO verifies</div><span class="arrow">→</span>
+    <div class="node">Gate A opens</div><span class="arrow">→</span>
+    <div class="node">IR‑A + load cell</div><span class="arrow">→</span>
+    <div class="node">Gate A closes</div><span class="arrow">→</span>
+    <div class="node">A‑CLOSED switch</div><span class="arrow">→</span>
+    <div class="node">Chamber check</div><span class="arrow">→</span>
+    <div class="node">Gate B opens</div>
+  </div>
+</div>
+<p>The critical rule is: <b>Gate B must not be commanded open until Gate A is confirmed closed and the chamber check is acceptable.</b> A valid RFID card and PIN authorize one passage; they do not bypass the physical chamber checks.</p>
+
+<div class="two">
+<div class="success"><b>Normal passage:</b><br>Authenticate → A opens → entry detected → stable expected load → A closes → A‑CLOSED switch active → chamber acceptable → B opens → exit detected → chamber becomes empty → B closes.</div>
+<div class="danger"><b>Possible tailgating / uncertainty:</b><br>Repeated IR‑A activity, long blockage, unusually high/unstable load, contradictory sensors, or gate fault → keep B closed → alarm → safely reopen A if needed.</div>
+</div>
+</section>
+
+
+<section id="simple">
+<h2>2A. Simplest final build path</h2>
+<p>The <b>final system includes the ESP32‑AI‑CAM</b>. To keep debugging manageable, assemble it in layers, but do not treat the ESP32 as an optional feature.</p>
+
+<table>
+<tr><th>Stage</th><th>What you build</th><th>Why</th></tr>
+<tr><td><b>Stage 1 — Core electronics</b></td><td>UNO, LCD, PCF8574 + keypad, RC522 + CD4050, HX711 + 1&nbsp;kg load cell, 2 IR sensors, 2 servos, 1 Gate-A-closed switch, emergency button, buzzer</td><td>Proves the safety/interlock logic before networking is added.</td></tr>
+<tr><td><b>Stage 2 — ESP32‑AI‑CAM</b></td><td>Program and test camera + Wi‑Fi separately, then connect its UART to the UNO using A2/A3 and the CD4050.</td><td>Keeps camera/network debugging separate from gate debugging.</td></tr>
+<tr><td><b>Stage 3 — Final integration</b></td><td>UNO sends event messages to ESP32; ESP32 can capture a photo, maintain a web-status page, and optionally send Telegram/network notifications.</td><td>Final demonstration has both physical security logic and connected monitoring.</td></tr>
+</table>
+
+<div class="success"><b>Final architecture:</b> the UNO is always the primary safety controller. The ESP32‑AI‑CAM is included and active, but it never gets authority to open Gate B. It receives event/status messages from the UNO and handles camera + Wi‑Fi functions.</div>
+
+<h3>Complexity reductions retained</h3>
+<ul>
+<li><b>No RTC and no microSD:</b> these are intentionally omitted from this build.</li>
+<li><b>No separate power-distribution board:</b> dedicated breadboard rails are used.</li>
+<li><b>No fuse required to make the prototype work:</b> the missing fuse holder remains unused until a proper fuse is available.</li>
+<li><b>One limit switch for now:</b> place it at Gate A CLOSED, the most important interlock verification.</li>
+<li><b>No AI/ML:</b> “AI‑Thinker” is the board/module name. We use the ESP32‑CAM only for image capture, Wi‑Fi, web status and notifications.</li>
+<li><b>PCF8574 keypad scanning uses <code>Wire</code> directly:</b> this avoids an extra keypad-I²C library.</li>
+<li><b>Use one or two hard-coded RFID UID + PIN pairs:</b> no external database is needed.</li>
+<li><b>Third FC‑51 remains a spare:</b> only IR‑A and IR‑B are installed.</li>
+</ul>
+</section>
+
+<section id="protocols">
+<h2>2B. Protocols and signal types used in the complete system</h2>
+<p>A protocol is the method used to exchange information. Some devices use a digital bus, while others are simple HIGH/LOW inputs or timed control signals.</p>
+
+<table>
+<tr><th>Subsystem</th><th>Protocol / signal</th><th>UNO / ESP pins</th><th>Purpose</th></tr>
+<tr><td>RC522 RFID</td><td><b>SPI</b></td><td>UNO D10 SS, D11 MOSI, D12 MISO, D13 SCK; A0 RST</td><td>UNO is SPI master. UNO→RC522 outputs pass through CD4050 because the RC522 is a 3.3&nbsp;V-class device.</td></tr>
+<tr><td>16×2 LCD backpack</td><td><b>I²C</b></td><td>UNO A4 SDA, A5 SCL</td><td>Displays prompts such as SCAN CARD, ENTER PIN, ACCESS DENIED and system state.</td></tr>
+<tr><td>PCF8574</td><td><b>I²C</b></td><td>UNO A4 SDA, A5 SCL</td><td>Shares the I²C bus with LCD at a different address and provides 8 GPIO for keypad scanning.</td></tr>
+<tr><td>4×4 keypad</td><td><b>Matrix scanning</b></td><td>PCF8574 P0–P7</td><td>R1–R4 and C1–C4 are scanned through the expander.</td></tr>
+<tr><td>1&nbsp;kg load cell</td><td><b>Analog differential bridge output</b></td><td>Load cell → HX711, not directly to UNO</td><td>Mechanical force changes strain-gauge resistance and creates a tiny differential voltage.</td></tr>
+<tr><td>HX711</td><td><b>DOUT + clock serial interface</b></td><td>UNO D3 DOUT, D4 SCK</td><td>Amplifies the load-cell signal and converts it to a 24-bit digital value.</td></tr>
+<tr><td>IR‑A</td><td>Digital GPIO</td><td>UNO D7</td><td>Entrance/obstruction/pass-through evidence at Gate A.</td></tr>
+<tr><td>IR‑B</td><td>Digital GPIO</td><td>UNO D8</td><td>Exit/obstruction/pass-through evidence at Gate B.</td></tr>
+<tr><td>Gate A CLOSED switch</td><td>Digital GPIO + internal pull-up</td><td>UNO A1</td><td>Physical verification that Gate A is closed.</td></tr>
+<tr><td>Emergency button</td><td>Digital GPIO + internal pull-up</td><td>UNO D2</td><td>Highest-priority emergency input.</td></tr>
+<tr><td>SG90 Gate A / Gate B</td><td><b>Servo pulse control</b></td><td>UNO D5, D6</td><td>UNO sends timed control pulses; motor power comes from the separate 5&nbsp;V servo rail.</td></tr>
+<tr><td>Buzzer</td><td>Digital GPIO</td><td>UNO D9</td><td>Alarm output.</td></tr>
+<tr><td>UNO ↔ ESP32‑AI‑CAM</td><td><b>UART serial</b> using UNO SoftwareSerial</td><td>UNO A2=RX, A3=TX; ESP32 U0T/GPIO1=TX, U0R/GPIO3=RX</td><td>UNO sends events such as AUTH_OK, POSSIBLE_TAILGATING, EMERGENCY and FAULT to the ESP32. UNO A3 TX is level-converted through CD4050.</td></tr>
+<tr><td>ESP32‑AI‑CAM ↔ Wi‑Fi router/hotspot</td><td><b>Wi‑Fi</b></td><td>Internal ESP32 radio</td><td>Provides local web/status access and optional Internet notification.</td></tr>
+<tr><td>ESP32‑AI‑CAM → web/Telegram</td><td><b>HTTP / HTTPS over Wi‑Fi</b></td><td>Software/network layer</td><td>Can expose a local camera/status page or send event notification/photo.</td></tr>
+<tr><td>OV2640 camera → ESP32</td><td>Camera-control/data interface handled by ESP32 camera driver</td><td>Already wired on the ESP32‑CAM board</td><td>No external wiring is required between the camera ribbon/module and ESP32 board.</td></tr>
+<tr><td>UNO ↔ PC</td><td>USB serial</td><td>UNO USB</td><td>Sketch upload and Serial Monitor debugging. D0/D1 remain free because ESP32 uses A2/A3 instead.</td></tr>
+</table>
+
+<div class="note"><b>Why A2/A3 for ESP32 UART?</b> It keeps UNO D0/D1 free for USB programming and Serial Monitor. In the final UNO code, <code>SoftwareSerial espSerial(A2, A3);</code> can be used at a modest baud rate such as 9600.</div>
+</section>
+
+<section id="pinmap">
+<h2>3. Final Arduino UNO pin map for the current build</h2>
+
+<table>
+<tr><th>UNO pin</th><th>Connect to</th><th>Direction / note</th></tr>
+<tr><td class="pin">D0 / RX</td><td>USB hardware serial only</td><td>Leave free for UNO upload and Serial Monitor debugging.</td></tr>
+<tr><td class="pin">D1 / TX</td><td>USB hardware serial only</td><td>Leave free; ESP32 communication is moved to A2/A3.</td></tr>
+<tr><td class="pin">D2</td><td>Emergency push button</td><td><code>INPUT_PULLUP</code>; button connects D2 to GND when pressed.</td></tr>
+<tr><td class="pin">D3</td><td>HX711 DT / DOUT</td><td>Load-cell data input</td></tr>
+<tr><td class="pin">D4</td><td>HX711 SCK / CLK</td><td>Load-cell clock output</td></tr>
+<tr><td class="pin">D5</td><td>Servo A signal</td><td>Signal only; servo power comes from separate 5&nbsp;V servo rail.</td></tr>
+<tr><td class="pin">D6</td><td>Servo B signal</td><td>Signal only; servo power comes from separate 5&nbsp;V servo rail.</td></tr>
+<tr><td class="pin">D7</td><td>IR‑A OUT</td><td>Gate A / chamber entrance sensor</td></tr>
+<tr><td class="pin">D8</td><td>IR‑B OUT</td><td>Gate B / chamber exit sensor</td></tr>
+<tr><td class="pin">D9</td><td>Buzzer signal / BC547 base resistor</td><td>Alarm output</td></tr>
+<tr><td class="pin">D10 / SS</td><td>CD4050 → RC522 SDA/SS</td><td>SPI chip select, level-converted</td></tr>
+<tr><td class="pin">D11 / MOSI</td><td>CD4050 → RC522 MOSI</td><td>SPI UNO→RC522, level-converted</td></tr>
+<tr><td class="pin">D12 / MISO</td><td>RC522 MISO directly</td><td>RC522 3.3&nbsp;V output → UNO input</td></tr>
+<tr><td class="pin">D13 / SCK</td><td>CD4050 → RC522 SCK</td><td>SPI clock, level-converted</td></tr>
+<tr><td class="pin">A0</td><td>CD4050 → RC522 RST</td><td>RFID reset, level-converted</td></tr>
+<tr><td class="pin">A1</td><td>Gate A CLOSED limit switch NO terminal</td><td><code>INPUT_PULLUP</code>; LOW = gate physically closed</td></tr>
+<tr><td class="pin">A2</td><td>ESP32‑AI‑CAM TX / U0T (GPIO1) → UNO RX</td><td>SoftwareSerial receive. ESP32 3.3&nbsp;V TX can be read by UNO.</td></tr>
+<tr><td class="pin">A3</td><td>UNO TX → CD4050 → ESP32‑AI‑CAM RX / U0R (GPIO3)</td><td>SoftwareSerial transmit. UNO 5&nbsp;V signal must be level-converted before ESP32 RX.</td></tr>
+<tr><td class="pin">A4 / SDA</td><td>LCD SDA + PCF8574 SDA</td><td>Shared I²C data line</td></tr>
+<tr><td class="pin">A5 / SCL</td><td>LCD SCL + PCF8574 SCL</td><td>Shared I²C clock line</td></tr>
+</table>
+
+<div class="note"><b>Why this map works:</b> the UNO’s hardware SPI pins are used for the RC522, A4/A5 are shared by the two I²C devices, the keypad consumes no direct UNO pins because it sits behind the PCF8574, and the analog pins A0–A3 can also function as digital GPIO.</div>
+</section>
+
+<section id="power">
+<h2>4. Power wiring — no separate power rail and no fuse required to start</h2>
+
+<div class="success"><b>Important clarification:</b> when this guide says <i>servo power rail</i>, it does <b>not</b> mean a separate product. A pair of unused red/blue side strips on your breadboard can be the servo power rail. You already have what you need.</div>
+
+<p>The easiest current arrangement uses two electrically separate 5&nbsp;V supplies:</p>
+
+<div class="diagram">
+<pre>
+SUPPLY 1 — LOGIC
+Power bank ──USB──> Arduino UNO
+
+UNO 5V  ──────────> breadboard LOGIC + rail
+UNO GND ──────────> breadboard LOGIC GND rail
+UNO 3.3V ─────────> a small separate 3.3V row for RC522 + CD4050
+
+
+SUPPLY 2 — SERVOS
+regulated 5V battery/source (+)
+          │
+          └── rocker switch ──> breadboard SERVO + rail
+regulated 5V battery/source (-) ─────────> breadboard SERVO GND rail
+
+SERVO + rail  ──> Servo A red
+                └> Servo B red
+
+SERVO GND rail ──> Servo A brown/black
+                 ├> Servo B brown/black
+                 └> one jumper ──> UNO/logic GND
+
+2200µF capacitor:
+  + leg → SERVO + rail
+  - leg → SERVO GND rail
+</pre>
+</div>
+
+<div class="danger"><b>Never connect the SERVO + rail to the Arduino/logic +5&nbsp;V rail.</b> The two positive supplies stay separate. Only the ground rails are joined.</div>
+
+<h3>4.1 Choose two different breadboard rail pairs</h3>
+<p>Most full-size breadboards have long side rails marked <b>+</b> and <b>−</b>. Use one pair for normal Arduino logic and, if your breadboard has another unused pair, use that second pair for the servos. Put a small label or tape on them:</p>
+
+<div class="wires">
+<div class="wirebox"><b>LOGIC +5V</b>From UNO 5V. LCD, PCF8574, HX711, FC-51 and suitable buzzer module use this.</div>
+<div class="wirebox"><b>LOGIC GND</b>From UNO GND. All logic devices use this ground.</div>
+<div class="wirebox"><b>SERVO +5V / GND</b>From the separate regulated 5V source. Only servos and the 2200µF capacitor use the positive servo rail.</div>
+</div>
+
+<div class="warning"><b>Check whether your breadboard rails are split in the middle.</b> Many breadboards have a hidden break halfway along a red/blue rail. With power OFF, use multimeter continuity mode to test the two ends. If they are split and you need the whole length, bridge only the matching halves with a short jumper: + to + and − to −.</div>
+
+<h3>4.2 Connect the logic supply</h3>
+<div class="step">
+<div class="stephead"><div class="stepnum">1</div><div>Leave every sensor/module disconnected. Connect the power bank to the UNO using USB.</div></div>
+</div>
+<div class="step">
+<div class="stephead"><div class="stepnum">2</div><div>UNO <b>5V → LOGIC + rail</b>. UNO <b>GND → LOGIC GND rail</b>.</div></div>
+</div>
+<div class="step">
+<div class="stephead"><div class="stepnum">3</div><div>Set the multimeter to DC voltage. Put black probe on LOGIC GND and red probe on LOGIC +. Confirm approximately 5&nbsp;V.</div></div>
+<label class="check"><input type="checkbox" class="task"> Logic breadboard rail measured near 5V.</label>
+</div>
+
+<h3>4.3 Make the separate servo supply on the breadboard</h3>
+<div class="step">
+<div class="stephead"><div class="stepnum">1</div><div>With the servo battery/source disconnected, choose a second unused +/− rail pair and label it <b>SERVO</b>.</div></div>
+</div>
+<div class="step">
+<div class="stephead"><div class="stepnum">2</div><div>Recommended: connect battery/source <b>positive → one identified pole of the DPST rocker switch</b>, then from its switched output to the SERVO + rail. The switch is optional; if you want the absolute simplest wiring, battery/source positive may go directly to the SERVO + rail.</div></div>
+</div>
+<div class="step">
+<div class="stephead"><div class="stepnum">3</div><div>Connect battery/source <b>negative directly → SERVO GND rail</b>.</div></div>
+</div>
+<div class="step">
+<div class="stephead"><div class="stepnum">4</div><div>Connect the 2200&nbsp;µF capacitor across the SERVO rails: capacitor <b>+</b> to SERVO +5V and the striped <b>−</b> lead to SERVO GND.</div></div>
+</div>
+<div class="step">
+<div class="stephead"><div class="stepnum">5</div><div>Before inserting either servo, turn the switch ON and measure between SERVO + and SERVO GND. Confirm approximately 5&nbsp;V, then switch it OFF again.</div></div>
+<label class="check"><input type="checkbox" class="task"> Servo rail measured near 5V with correct polarity.</label>
+</div>
+
+<h3>4.4 Make the common ground</h3>
+<div class="step">
+<div class="stephead"><div class="stepnum">1</div><div>Run <b>one jumper from SERVO GND rail to LOGIC GND rail</b>. This is the common ground connection.</div></div>
+</div>
+<div class="step">
+<div class="stephead"><div class="stepnum">2</div><div>With power OFF, use continuity mode between the two GND rails. It should beep. Test between the two positive rails: they should <b>not</b> have continuity.</div></div>
+<label class="check"><input type="checkbox" class="task"> Grounds are common; the two +5V rails are not connected together.</label>
+</div>
+
+<h3>4.5 What about the missing fuse?</h3>
+<div class="note"><b>The circuit still works without a fuse.</b> A fuse is protection against excessive current or a short circuit; it is not required for the Arduino logic to function. Since the actual fuse was not delivered, leave the fuse holder completely out of this first circuit.</div>
+
+<p>Current simple path:</p>
+<pre>
+5V battery + → rocker switch → SERVO + breadboard rail
+5V battery - → SERVO GND breadboard rail
+</pre>
+
+<div class="danger"><b>Do not put a piece of wire, foil, or another conductor into the fuse holder to imitate a fuse.</b> Simply do not use the holder until a proper fuse is obtained.</div>
+
+<h3>4.6 Breadboard servo-power limitations</h3>
+<p>For this small tabletop prototype, using a dedicated breadboard rail for two lightly loaded SG90 servos is the simplest approach. Keep the gates very light, wires short, and do not stall the servos against the cardboard. If the UNO resets, the rail voltage drops badly, the breadboard gets warm, or servo motion is erratic, stop and move the high-current servo distribution to thicker direct wiring/screw terminals.</p>
+
+<p>Your red/black cable and screw terminals can be used later for a more robust version, but they are not required for the first successful build.</p>
+
+<h3>4.7 Final power map to memorize</h3>
+<table>
+<tr><th>Part</th><th>Power source</th></tr>
+<tr><td>Arduino UNO</td><td>Power bank through USB</td></tr>
+<tr><td>LCD</td><td>UNO 5V logic breadboard rail</td></tr>
+<tr><td>PCF8574</td><td>UNO 5V logic breadboard rail</td></tr>
+<tr><td>HX711</td><td>UNO 5V logic breadboard rail</td></tr>
+<tr><td>FC-51 IR sensors</td><td>UNO 5V logic breadboard rail</td></tr>
+<tr><td>RC522</td><td><b>UNO 3.3V</b>, not 5V</td></tr>
+<tr><td>CD4050</td><td><b>UNO 3.3V</b></td></tr>
+<tr><td>Servo A + Servo B</td><td><b>Separate regulated 5V source</b> through SERVO breadboard rail</td></tr>
+<tr><td>ESP32‑AI‑CAM</td><td>Stable 5&nbsp;V supply. Prefer a direct 5&nbsp;V branch from the power bank/source rather than the noisy servo +5&nbsp;V rail. Never power it from the UNO 3.3&nbsp;V pin.</td></tr>
+<tr><td>All grounds</td><td>Connected together</td></tr>
+</table>
+</section>
+
+
+<section id="smallparts">
+<h2>4A. Every small purchased item — exactly where it goes and whether you must use it</h2>
+
+<div class="parts-card">
+<h3>1) 0.1 µF ceramic capacitor — <span class="status-recommended">RECOMMENDED</span></h3>
+<p><b>Purpose:</b> local noise suppression/decoupling for the CD4050. It supplies a tiny local energy reserve when logic transitions occur.</p>
+<p><b>Polarity:</b> ceramic capacitor is <b>not polarized</b>; either leg can go to either side.</p>
+<div class="mini-diagram">UNO 3.3V ───── CD4050 pin 1 (VCC)
+                   │
+                 0.1µF
+                   │
+GND ─────────── CD4050 pin 8 (VSS)</div>
+<p><b>Placement:</b> put it physically close to CD4050 pins 1 and 8 on the breadboard.</p>
+<p><b>Can you skip it?</b> The circuit may still run without it, but do not skip it in your final build because you already have the part and it improves reliability.</p>
+</div>
+
+<div class="parts-card">
+<h3>2) 2200 µF electrolytic capacitor — <span class="status-recommended">RECOMMENDED</span></h3>
+<p><b>Purpose:</b> helps the servo rail tolerate short current surges when SG90 motors start or change direction.</p>
+<p><b>Polarity:</b> this capacitor <b>is polarized</b>. The negative side normally has a stripe. Reverse polarity is wrong.</p>
+<div class="mini-diagram">SERVO +5V rail ───────────┬──── Servo A red
+                          ├──── Servo B red
+                          │
+                         (+)
+                       2200µF
+                         (-)
+                          │
+SERVO GND rail ───────────┴──── Servo grounds</div>
+<p><b>Where:</b> plug it across the dedicated servo breadboard rails, preferably close to where both servos connect.</p>
+<p><b>Can you skip it?</b> Yes, the logic does not depend on it, but servo-related resets/jitter become more likely. Use it.</p>
+</div>
+
+<div class="parts-card">
+<h3>3) CD4050 — <span class="status-required">REQUIRED</span></h3>
+<p><b>Purpose:</b> the UNO uses 5&nbsp;V digital logic while RC522/ESP32 inputs are 3.3&nbsp;V-class. The CD4050 lowers UNO output logic levels before those signals reach the 3.3&nbsp;V devices.</p>
+<p><b>Power:</b> CD4050 pin 1 → UNO 3.3&nbsp;V; pin 8 → GND; 0.1&nbsp;µF capacitor across pins 1 and 8.</p>
+<table>
+<tr><th>Channel</th><th>UNO input to CD4050</th><th>CD4050 output</th><th>Destination</th></tr>
+<tr><td>1</td><td>D10 → pin 3</td><td>pin 2</td><td>RC522 SDA/SS</td></tr>
+<tr><td>2</td><td>D11 → pin 5</td><td>pin 4</td><td>RC522 MOSI</td></tr>
+<tr><td>3</td><td>D13 → pin 7</td><td>pin 6</td><td>RC522 SCK</td></tr>
+<tr><td>4</td><td>A0 → pin 9</td><td>pin 10</td><td>RC522 RST</td></tr>
+<tr><td>5</td><td>A3 → pin 11</td><td>pin 12</td><td>ESP32 RX / U0R / GPIO3</td></tr>
+<tr><td>6</td><td>spare</td><td>spare</td><td>unused</td></tr>
+</table>
+<p><b>Important:</b> RC522 MISO → UNO D12 directly; ESP32 TX → UNO A2 directly. Those directions already originate from 3.3&nbsp;V devices.</p>
+</div>
+
+<div class="parts-card">
+<h3>4) BC547 transistor — <span class="status-optional">OPTIONAL</span></h3>
+<p><b>Use it only if:</b> your buzzer is a simple bare <b>2-pin active buzzer</b> and you want the transistor to switch its current.</p>
+<p><b>Do not use it if:</b> your buzzer is a ready-made <b>3-pin module</b> with VCC, GND and SIG/S pins. In that case connect the module directly as described in the buzzer section.</p>
+<p>Typical transistor-driver concept:</p>
+<div class="mini-diagram">5V ───────────── buzzer +
+buzzer - ────── BC547 collector
+BC547 emitter ─ GND
+UNO D9 ─ resistor ─ BC547 base</div>
+<div class="warning"><b>Your final receipt shows 10&nbsp;kΩ resistors, not a 1&nbsp;kΩ–2.2&nbsp;kΩ base resistor.</b> Therefore, to reduce complexity, use a 3-pin active buzzer module if that is what you already own and leave both BC547 transistors unused. Do not build the transistor stage just because you bought the transistors.</div>
+<p><b>Pin-order warning:</b> BC547 lead order can be misread when rotated. Check the exact package/datasheet or test the part before wiring; do not rely on a generic drawing without orientation.</p>
+</div>
+
+<div class="parts-card">
+<h3>5) 10 kΩ resistors — <span class="status-optional">OPTIONAL / SPARE</span></h3>
+<p>They are <b>not needed</b> for:</p>
+<ul>
+<li>Emergency button — UNO D2 uses <code>INPUT_PULLUP</code>.</li>
+<li>Gate A closed switch — UNO A1 uses <code>INPUT_PULLUP</code>.</li>
+<li>RC522 level conversion — CD4050 already does it.</li>
+<li>ESP32 RX level conversion — CD4050 already does it.</li>
+</ul>
+<p>Keep them as spare general pull-up/pull-down resistors. If later you add LEDs, use proper LED current-limiting resistors rather than assuming 10&nbsp;kΩ is appropriate.</p>
+</div>
+
+<div class="parts-card">
+<h3>6) DPST rocker switch — <span class="status-optional">OPTIONAL BUT USEFUL</span></h3>
+<p>The simplest use is as a master ON/OFF switch for the <b>separate servo supply</b>. You may use only one pole of the DPST device.</p>
+<div class="mini-diagram">5V servo source (+) ── rocker switch ── SERVO + breadboard rail
+5V servo source (-) ───────────────── SERVO GND breadboard rail</div>
+<p><b>If you skip it:</b> connect the servo source directly to the servo rails and disconnect the source manually when you want the servos off.</p>
+<p><b>Before wiring:</b> use the multimeter continuity mode to identify which two rocker terminals become connected in the ON position. Do not guess from physical appearance.</p>
+</div>
+
+<div class="parts-card">
+<h3>7) Fuse + fuse holder — <span class="status-optional">NOT REQUIRED TO FUNCTION</span></h3>
+<p><b>Purpose:</b> electrical protection if the servo-power wiring shorts or draws excessive current.</p>
+<p><b>Current situation:</b> you received the holder but not the fuse. The project still works. Leave the holder out completely.</p>
+<div class="mini-diagram">CURRENT BUILD:
+5V servo source + ── rocker switch ── SERVO + rail
+
+LATER, WITH CORRECT FUSE:
+5V servo source + ── fuse holder + fuse ── rocker ── SERVO + rail</div>
+<div class="danger"><b>Never replace a missing fuse with wire, foil, a resistor, or any improvised conductor.</b> An empty holder is simply not used.</div>
+<p><b>Is it mandatory?</b> No for the tabletop prototype's operation. Recommended as a later safety improvement.</p>
+</div>
+
+<div class="parts-card">
+<h3>8) DC barrel jack 5.5×2.1 mm female adapter — <span class="status-optional">OPTIONAL</span></h3>
+<p>Use it <b>only</b> when your regulated 5&nbsp;V source ends in a matching 5.5×2.1&nbsp;mm male barrel plug.</p>
+<div class="mini-diagram">5V source with male barrel plug
+            │
+            ▼
+female barrel-jack adapter
+      + terminal ── rocker ── SERVO + rail
+      - terminal ──────────── SERVO GND rail</div>
+<p><b>If the battery/source already gives you bare + and − wires:</b> skip the barrel jack entirely.</p>
+<div class="warning"><b>Do not assume barrel polarity.</b> Many supplies are center-positive, but verify the adapter's +/− markings and confirm output polarity with the multimeter before connecting the servo rail.</div>
+</div>
+
+<div class="parts-card">
+<h3>9) Micro‑USB power jack/breakout — <span class="status-optional">OPTIONAL</span></h3>
+<p>This is only a convenience part for exposing <b>5&nbsp;V and GND from a USB power cable/power bank</b>.</p>
+<p>Possible use in this project:</p>
+<div class="mini-diagram">Power bank USB
+     │
+micro‑USB breakout
+     ├── 5V ─────> ESP32‑CAM 5V
+     └── GND ────> common GND</div>
+<p><b>Before using it:</b> identify the board's actual VBUS/5V and GND labels and measure the output with the multimeter. Do not connect a data pin by mistake.</p>
+<p><b>Do not use it for the two servos</b> unless you know the breakout/cable can safely carry the required current. The simpler plan is still the separate regulated servo source.</p>
+<p><b>If ESP32 already has a stable 5&nbsp;V connection:</b> leave this breakout unused.</p>
+</div>
+
+<div class="parts-card">
+<h3>10) 2-pin screw-terminal blocks — <span class="status-optional">OPTIONAL</span></h3>
+<p>These are mainly for making power wires removable and secure in a more permanent build.</p>
+<p>Examples:</p>
+<ul>
+<li>Servo source +/− entering a perfboard.</li>
+<li>Load-cell cable entering a small interface board.</li>
+<li>External power input.</li>
+</ul>
+<p>If your terminal blocks are <b>PCB-mount</b> types, they normally need to be soldered to a board. They are therefore <b>not mandatory</b> in your solderless breadboard version. Do not try to force thick terminal pins into breadboard holes.</p>
+</div>
+
+<div class="parts-card">
+<h3>11) Red/black power wire — <span class="status-recommended">RECOMMENDED</span></h3>
+<p>Use red for +5&nbsp;V and black for GND where possible, especially around the separate servo supply. This reduces polarity mistakes and is often more robust than thin Dupont wires for power.</p>
+<p>It is not mandatory if your available jumper wires are short, secure and remain cool during servo operation.</p>
+</div>
+
+<div class="parts-card">
+<h3>12) Multimeter — <span class="status-recommended">STRONGLY RECOMMENDED TOOL</span></h3>
+<p>It is not physically installed in the project. Use it before connecting sensitive modules:</p>
+<ul>
+<li>Measure LOGIC rail ≈5&nbsp;V.</li>
+<li>Measure CD4050 / RC522 rail ≈3.3&nbsp;V.</li>
+<li>Measure SERVO rail ≈5&nbsp;V.</li>
+<li>Check the two +5&nbsp;V supplies are <b>not</b> tied together.</li>
+<li>Check common-ground continuity.</li>
+<li>Identify rocker-switch terminals.</li>
+<li>Identify emergency-button contacts.</li>
+<li>Test Gate A limit-switch COM/NO behavior.</li>
+<li>Check barrel-jack polarity if used.</li>
+</ul>
+</div>
+
+<div class="success"><b>Recommended low-complexity choice:</b> actually install CD4050, both capacitors and the rocker switch. Leave the fuse holder, barrel jack, micro‑USB breakout, screw-terminal blocks, BC547s and 10&nbsp;kΩ resistors unused unless a specific need arises. This gives the cleanest beginner build with the parts you already own.</div>
+</section>
+
+<section id="solderless">
+<h2>4B. How to keep the prototype mostly solderless</h2>
+<p>Most modules can be connected with Dupont jumper wires because they have header pins. The difficult parts are bare wires or large mechanical terminals.</p>
+
+<table>
+<tr><th>Part</th><th>Solderless method</th><th>Important note</th></tr>
+<tr><td>UNO, LCD, PCF8574, RC522, IR sensors, servos</td><td>Dupont jumper wires / existing connectors</td><td>No soldering normally needed.</td></tr>
+<tr><td>CD4050</td><td>Insert DIP IC across the breadboard center gap</td><td>Check notch/orientation before wiring.</td></tr>
+<tr><td>Capacitors</td><td>Insert directly into breadboard</td><td>2200&nbsp;µF polarity matters; 0.1&nbsp;µF ceramic polarity does not.</td></tr>
+<tr><td>Emergency button</td><td>If it is a module/header type, use jumpers. If bare 4-pin tactile switch, insert into breadboard.</td><td>Use multimeter continuity to identify the two electrical sides.</td></tr>
+<tr><td>Large limit switch</td><td>Use a secure temporary wire connection through/around COM and NO terminals, then insulate and mechanically restrain the wire.</td><td>Do not leave a loose wire that can fall off during the demo.</td></tr>
+<tr><td>Load-cell bare wires</td><td>Best solderless option is a small lever/screw connector or HX711 board with screw terminals. If unavailable, use a carefully secured temporary splice to jumper leads.</td><td>This is the least convenient solderless connection; it must be mechanically stable because tiny signal changes are being measured.</td></tr>
+<tr><td>PCB screw-terminal blocks</td><td>Skip them</td><td>Many require soldering to a PCB/perfboard, so they are not useful just because you bought them.</td></tr>
+</table>
+
+<div class="warning"><b>Do not let “no soldering” create unreliable safety inputs.</b> The Gate A limit switch and load-cell wires must be secure enough that movement of the box cannot disconnect them. If either remains unreliable after testing, those few joints are the first places worth soldering.</div>
+</section>
+
+<section id="body">
+<h2>5. Build the top-open shoebox body</h2>
+<p>Your preferred body is a <b>top-open shoebox</b>: remove the lid and keep the front, back, left and right side walls intact. You look down into the system from above during the demo.</p>
+
+<div class="diagram">
+<pre>
+TOP VIEW — LID REMOVED
+
+FRONT WALL:  LCD | RFID | KEYPAD | EMERGENCY | BUZZER
+┌───────────────────────────────────────────────────────────────┐
+│                                                               │
+│  WAITING        GATE A       SECURITY       GATE B  RESTRICTED│
+│   AREA            │           CHAMBER          │       AREA   │
+│                   │       [LOAD PLATFORM]      │              │
+│        IR-A  →    │                        → IR-B              │
+│                                                               │
+│  Rear electronics strip / shelf:                              │
+│  UNO | breadboard | CD4050 | PCF8574 | HX711 | ESP32-CAM     │
+└───────────────────────────────────────────────────────────────┘
+
+Person/model flow: LEFT → Gate A → chamber → Gate B → RIGHT
+</pre>
+</div>
+
+<h3>5.1 Divide the box</h3>
+<p>Do not make exact dimensions complicated. Measure the inside length and divide it approximately:</p>
+<table>
+<tr><th>Zone</th><th>Approximate share</th><th>Purpose</th></tr>
+<tr><td>Waiting area</td><td>25–30%</td><td>Model waits before authentication and Gate A.</td></tr>
+<tr><td>Security chamber</td><td>35–40%</td><td>Contains the load-cell platform between the two gates.</td></tr>
+<tr><td>Restricted area</td><td>25–30%</td><td>Destination after Gate B.</td></tr>
+</table>
+
+<h3>5.2 Make Gate A and Gate B partitions</h3>
+<ol>
+<li>Cut two vertical cardboard divider walls that fit from the shoebox floor up toward the side-wall height.</li>
+<li>Cut a doorway/opening in each divider large enough for your demonstration model.</li>
+<li>Make a lightweight gate flap for each doorway.</li>
+<li>Use strong tape as a simple hinge, or mount the gate so the SG90 horn/linkage can rotate it.</li>
+<li>Keep gates extremely light so the SG90 does not stall.</li>
+</ol>
+
+<h3>5.3 Mount the user interface on the front wall</h3>
+<p>From left to right, a clean arrangement is:</p>
+<pre>LCD  →  RC522 RFID  →  4×4 keypad  →  Emergency button  →  Buzzer</pre>
+<p>The user stands outside the front wall, scans a card, enters a PIN and can reach the emergency button.</p>
+
+<h3>5.4 Electronics placement</h3>
+<p>Because the lid is removed, do not place the UNO on a lid. Instead make a <b>rear electronics strip</b>:</p>
+<ul>
+<li>Cut a long narrow piece of thick cardboard approximately the width of the box.</li>
+<li>Mount it horizontally along the inside rear wall or on a small raised shelf.</li>
+<li>Place UNO + breadboard on this rear strip.</li>
+<li>Keep CD4050 and PCF8574 on/near the breadboard.</li>
+<li>Keep HX711 toward the center, close enough to the load-cell wires.</li>
+<li>Mount ESP32‑AI‑CAM high on a rear corner, angled down toward the security chamber and Gate A/B region.</li>
+<li>Route wires along the rear wall and floor edges using tape/cable ties so they do not cross the walking path.</li>
+</ul>
+
+<h3>5.5 Sensor placement</h3>
+<table>
+<tr><th>Part</th><th>Physical location</th></tr>
+<tr><td>IR‑A</td><td>Immediately inside/next to Gate A at model body height, aimed so a model crossing Gate A changes its output.</td></tr>
+<tr><td>IR‑B</td><td>Immediately inside/next to Gate B at model body height.</td></tr>
+<tr><td>Gate A CLOSED switch</td><td>At the final closed stop of Gate A. The gate itself must physically press the switch only when fully closed.</td></tr>
+<tr><td>Load-cell platform</td><td>Centered in the chamber so the model must stand/pass over it.</td></tr>
+<tr><td>ESP32‑CAM</td><td>High rear corner, angled toward the chamber/entrance. Keep lens unobstructed.</td></tr>
+</table>
+
+<h3>5.6 Keep the load platform mechanically independent</h3>
+<p>The chamber platform must be raised slightly and supported by the active end of the load cell. It must not scrape the shoebox floor or side walls. If it touches the box elsewhere, part of the weight bypasses the load cell.</p>
+
+<div class="success"><b>Best presentation style:</b> leave the entire top open. Keep all four side walls. The teacher can look down and immediately see Waiting Area → Gate A → Security Chamber → Gate B → Restricted Area while the front panel remains usable.</div>
+</section>
+
+<section id="breadboard">
+<h2>6. Prepare and label the breadboard before inserting modules</h2>
+<p>This section prevents the most common beginner mistake: mixing the 5&nbsp;V logic rail, 3.3&nbsp;V devices, and the separate servo supply.</p>
+
+<h3>Recommended physical layout</h3>
+<div class="diagram">
+<pre>
+LEFT / TOP SIDE OF BREADBOARD
+-----------------------------------------
+LOGIC +5V  =================================
+LOGIC GND  =================================
+
+        UNO signal wiring / modules
+
+3.3V dedicated short row:  RC522 + CD4050 only
+
+        center trench: CD4050 IC
+
+
+RIGHT / BOTTOM SIDE OF BREADBOARD
+-----------------------------------------
+SERVO +5V  =================================
+SERVO GND  =================================
+             │
+             └──── common-GND jumper ──── LOGIC GND
+</pre>
+</div>
+
+<div class="step">
+<div class="stephead"><div class="stepnum">1</div><div>Put small tape labels beside the rails: <b>LOGIC 5V</b>, <b>GND</b>, <b>SERVO 5V</b>, <b>SERVO GND</b>. This is more important than wire color.</div></div>
+</div>
+
+<div class="step">
+<div class="stephead"><div class="stepnum">2</div><div>Check continuity along each rail with power OFF. If a rail is split in the center, bridge the two same-polarity halves only when you actually need the full rail length.</div></div>
+</div>
+
+<div class="step">
+<div class="stephead"><div class="stepnum">3</div><div>Connect UNO 5V/GND to the logic rails. Create a small isolated 3.3&nbsp;V row from UNO 3.3V for the RC522 and CD4050. Do not use the servo +5V rail for either of them.</div></div>
+</div>
+
+<div class="step">
+<div class="stephead"><div class="stepnum">4</div><div>Create the separate servo +5V/GND rails exactly as described in the power section. Join only SERVO GND to LOGIC GND.</div></div>
+</div>
+
+<div class="step">
+<div class="stephead"><div class="stepnum">5</div><div>Power up with <b>no modules inserted</b>. Measure every labeled rail. Write the measured voltage on a piece of tape if helpful.</div></div>
+<label class="check"><input type="checkbox" class="task"> Logic rail ≈5V, 3.3V row ≈3.3V, servo rail ≈5V, positives isolated, grounds common.</label>
+</div>
+
+<div class="warning"><b>Do not use the breadboard rail markings blindly.</b> The red/blue printed line is only a label; your wiring determines the voltage. A rail marked red can still accidentally be ground if wired incorrectly. Always measure.</div>
+</section>
+
+<section id="cd4050">
+<h2>7. Wire the CD4050 and RC522</h2>
+<p>Place the CD4050 across the center trench of the breadboard with the notch facing upward. Pin numbering starts at the upper-left, moves down the left side, then continues from the lower-right upward.</p>
+
+<table>
+<tr><th>CD4050 pin</th><th>Role</th><th>Connect</th></tr>
+<tr><td class="pin">1</td><td>VCC</td><td>Arduino 3.3&nbsp;V</td></tr>
+<tr><td class="pin">8</td><td>VSS / GND</td><td>Common GND</td></tr>
+<tr><td class="pin">3 → 2</td><td>Channel 1 input → output</td><td>UNO D10 → pin 3; pin 2 → RC522 SDA/SS</td></tr>
+<tr><td class="pin">5 → 4</td><td>Channel 2</td><td>UNO D11 → pin 5; pin 4 → RC522 MOSI</td></tr>
+<tr><td class="pin">7 → 6</td><td>Channel 3</td><td>UNO D13 → pin 7; pin 6 → RC522 SCK</td></tr>
+<tr><td class="pin">9 → 10</td><td>Channel 4</td><td>UNO A0 → pin 9; pin 10 → RC522 RST</td></tr>
+<tr><td class="pin">11 → 12</td><td>Channel 5</td><td>Later: UNO D1/TX → pin 11; pin 12 → ESP32 RX</td></tr>
+<tr><td class="pin">14 → 15</td><td>Channel 6</td><td>Spare</td></tr>
+<tr><td class="pin">13, 16</td><td>NC</td><td>Leave unconnected</td></tr>
+</table>
+
+<p>Place the <b>0.1&nbsp;µF capacitor directly between CD4050 pin 1 and pin 8</b>, physically close to the IC.</p>
+
+<h3>RC522 complete connection</h3>
+<table>
+<tr><th>RC522 pin label</th><th>Connect to</th></tr>
+<tr><td>3.3V</td><td>Arduino 3.3&nbsp;V rail</td></tr>
+<tr><td>GND</td><td>Common GND</td></tr>
+<tr><td>SDA / SS</td><td>CD4050 pin 2 (whose input pin 3 comes from UNO D10)</td></tr>
+<tr><td>SCK</td><td>CD4050 pin 6 (input pin 7 from UNO D13)</td></tr>
+<tr><td>MOSI</td><td>CD4050 pin 4 (input pin 5 from UNO D11)</td></tr>
+<tr><td>MISO</td><td><b>Directly to UNO D12</b></td></tr>
+<tr><td>RST</td><td>CD4050 pin 10 (input pin 9 from UNO A0)</td></tr>
+<tr><td>IRQ</td><td>Leave unconnected</td></tr>
+</table>
+
+<div class="danger">Do not power the RC522 from the UNO 5&nbsp;V pin. The MFRC522 is a 3.3&nbsp;V-class device. The UNO SPI output pins are 5&nbsp;V logic, which is why the UNO→RC522 lines pass through the CD4050.</div>
+
+<label class="check"><input type="checkbox" class="task"> RC522 power is 3.3&nbsp;V and every UNO→RC522 line passes through the correct CD4050 channel.</label>
+</section>
+
+<section id="i2c">
+<h2>8. Wire the I²C LCD, PCF8574 and keypad</h2>
+
+<h3>Shared I²C bus</h3>
+<table>
+<tr><th>UNO</th><th>LCD backpack</th><th>PCF8574 expander</th></tr>
+<tr><td>A4 / SDA</td><td>SDA</td><td>SDA</td></tr>
+<tr><td>A5 / SCL</td><td>SCL</td><td>SCL</td></tr>
+<tr><td>5V</td><td>VCC</td><td>VCC</td></tr>
+<tr><td>GND</td><td>GND</td><td>GND</td></tr>
+</table>
+
+<div class="warning"><b>Address collision check is mandatory.</b> Many 16×2 I²C LCD backpacks themselves use a PCF8574, often at an address such as 0x27. Your separate PCF8574 keypad expander must have a <b>different</b> address. Run an I²C scanner before connecting the keypad. If both devices respond at the same address, change the address jumpers/pads on the separate expander (or the LCD backpack). The exact method depends on your specific module.</div>
+
+<h3>4×4 keypad → PCF8574</h3>
+<table>
+<tr><th>Keypad lead</th><th>PCF8574</th><th>Meaning</th></tr>
+<tr><td>R1</td><td>P0</td><td>Row 1</td></tr>
+<tr><td>R2</td><td>P1</td><td>Row 2</td></tr>
+<tr><td>R3</td><td>P2</td><td>Row 3</td></tr>
+<tr><td>R4</td><td>P3</td><td>Row 4</td></tr>
+<tr><td>C1</td><td>P4</td><td>Column 1</td></tr>
+<tr><td>C2</td><td>P5</td><td>Column 2</td></tr>
+<tr><td>C3</td><td>P6</td><td>Column 3</td></tr>
+<tr><td>C4</td><td>P7</td><td>Column 4</td></tr>
+</table>
+
+<div class="note">Membrane keypad ribbon order is not universally guaranteed. If the printed keypad documentation differs, follow its R1–R4/C1–C4 identification. If unlabeled, identify rows/columns with a multimeter continuity test or a small keypad test sketch.</div>
+
+<h3>I²C scanner test</h3>
+<pre>
+#include &lt;Wire.h&gt;
+
+void setup() {
+  Serial.begin(9600);
+  Wire.begin();
+  Serial.println("I2C scan");
+}
+
+void loop() {
+  for (byte a = 1; a &lt; 127; a++) {
+    Wire.beginTransmission(a);
+    if (Wire.endTransmission() == 0) {
+      Serial.print("Found 0x");
+      if (a &lt; 16) Serial.print('0');
+      Serial.println(a, HEX);
+    }
+  }
+  delay(3000);
+}
+</pre>
+<p>You should see two different I²C addresses when both LCD backpack and keypad expander are connected.</p>
+<label class="check"><input type="checkbox" class="task"> Two distinct I²C addresses detected.</label>
+</section>
+
+<section id="hx711">
+<h2>9. Build the 1 kg load-cell + HX711 chamber floor from scratch</h2>
+
+<div class="success"><b>What this subsystem does:</b> the load cell does not directly tell us “one person” or “two people.” It measures how much force/weight is on the chamber floor. The UNO combines that result with IR‑A, IR‑B and gate state. An abnormal value becomes <b>Possible Tailgating</b> or <b>Unexpected Chamber Condition</b>.</div>
+
+<h3>9.1 Understand the two parts</h3>
+<p>Your ElectronicsBD 1&nbsp;kg sensor is a <b>4-wire strain-gauge load cell</b>. When the aluminum bar bends slightly, internal strain gauges change resistance and produce a very small analog differential voltage. That signal is too small for the UNO to read directly. The HX711 is the amplifier + 24-bit ADC that converts it into a digital number the UNO can read.</p>
+
+<div class="diagram">
+<pre>
+WEIGHT / FORCE
+     ↓
+1 kg LOAD CELL
+(strain gauges)
+     ↓ tiny analog differential signal
+    HX711
+(amplifier + 24-bit ADC)
+     ↓ digital DOUT/SCK
+ Arduino UNO
+     ↓
+tare → calibrated grams → stable chamber weight
+     ↓
+combine with IR-A / IR-B / gate state
+</pre>
+</div>
+
+<h3>9.2 Wire your specific 4-wire load cell to the HX711</h3>
+<p>The ElectronicsBD listing for the 1&nbsp;kg model identifies its wires as below. Still compare the actual delivered sensor and HX711 labels before powering it.</p>
+
+<table>
+<tr><th>Load-cell wire</th><th>Meaning in seller listing</th><th>HX711 terminal</th></tr>
+<tr><td><b>Red</b></td><td>Excitation / supply positive</td><td><b>E+</b></td></tr>
+<tr><td><b>Black</b></td><td>Excitation / supply negative</td><td><b>E−</b></td></tr>
+<tr><td><b>White</b></td><td>Output +</td><td><b>A+</b></td></tr>
+<tr><td><b>Green</b></td><td>Output −</td><td><b>A−</b></td></tr>
+</table>
+
+<div class="warning">If the actual sensor arrives with different colors or a printed wiring diagram that differs, follow the physical sensor/documentation rather than blindly following colors. Never connect the load-cell wires directly to UNO analog pins.</div>
+
+<h3>9.3 Wire HX711 to the UNO</h3>
+<table>
+<tr><th>HX711 side</th><th>UNO</th><th>Purpose</th></tr>
+<tr><td>VCC</td><td>LOGIC +5&nbsp;V breadboard rail</td><td>HX711 module power</td></tr>
+<tr><td>GND</td><td>LOGIC GND rail</td><td>Ground reference</td></tr>
+<tr><td>DT / DOUT</td><td>D3</td><td>24-bit data output to UNO</td></tr>
+<tr><td>SCK / CLK</td><td>D4</td><td>Clock generated by UNO</td></tr>
+<tr><td>E+, E−, A+, A−</td><td>Load cell only</td><td>Do not connect these four terminals to UNO pins</td></tr>
+</table>
+
+<h3>9.4 Mechanical mounting — the most important part</h3>
+<p>A straight bar load cell must be allowed to <b>bend very slightly</b>. If the whole bar is glued flat to the shoebox floor, it cannot measure properly.</p>
+
+<div class="diagram">
+<pre>
+SIDE VIEW — SIMPLE SHOebox METHOD
+
+Light chamber platform
+==============================   ← model stands here
+            │
+            │ support/spacer
+            ▼
+     [ACTIVE END]
+   o==============o
+   |  1 kg LOAD   |     ← aluminum bar
+   |     CELL      |
+   o==============o
+     [FIXED END]
+        ███████          ← rigid spacer / wood / stacked ice-cream sticks
+==============================   ← reinforced shoebox floor
+</pre>
+</div>
+
+<p><b>Fixed end:</b> attach one end firmly to a reinforced base. <b>Active end:</b> the opposite end supports the lightweight chamber platform. The platform must not touch the shoebox floor or side walls when weight is applied.</p>
+
+<h4>Easy shoebox mounting options</h4>
+<ul>
+<li>Reinforce the fixed side with stacked cardboard, an ice-cream-stick block, small wood scrap or acrylic scrap.</li>
+<li>Use the load-cell mounting holes if possible. Small bolts are best; strong cable ties or carefully placed rigid clamps can work for a prototype.</li>
+<li>Do not put hot glue across the flexible central section of the aluminum bar.</li>
+<li>Keep the chamber platform light because the sensor's full capacity is 1&nbsp;kg.</li>
+<li>Do not press down with your hand during testing; use small known objects/weights.</li>
+</ul>
+
+<h3>9.5 First raw-reading test</h3>
+<p>Install an HX711 library, connect only the load subsystem, and print raw values. The purpose is not yet to obtain grams; simply verify that adding weight changes the reading in a repeatable direction.</p>
+
+<pre>
+#include &lt;HX711.h&gt;
+
+HX711 scale;
+
+void setup() {
+  Serial.begin(9600);
+  scale.begin(3, 4);   // DOUT=D3, SCK=D4
+}
+
+void loop() {
+  if (scale.is_ready()) {
+    long raw = scale.read_average(10);
+    Serial.println(raw);
+  } else {
+    Serial.println("HX711 not ready");
+  }
+  delay(300);
+}
+</pre>
+
+<p>With the empty platform, the number should remain in roughly the same region. Put a small object on the platform: the value should change significantly. Remove it: the value should return close to the original region.</p>
+
+<div class="warning"><b>If the value moves “negative” when weight is added:</b> this is not necessarily a fault. You can swap A+ and A− or simply use a negative calibration factor later.</div>
+
+<h3>9.6 Tare: make the empty chamber equal zero</h3>
+<p>The platform itself has weight. We do not want that counted as an intruder. At startup, when the chamber is confirmed empty, call <code>scale.tare()</code>. That stores the current empty reading as zero.</p>
+
+<pre>
+scale.begin(3, 4);
+delay(500);
+scale.tare();       // chamber platform must be EMPTY here
+</pre>
+
+<div class="danger"><b>Do not tare while an object/model is standing in the chamber.</b> That would make the occupied chamber appear to be zero.</div>
+
+<h3>9.7 Calibrate it into grams</h3>
+<ol>
+<li>Finish the physical platform first.</li>
+<li>Power the system and tare the empty platform.</li>
+<li>Place a <b>known weight</b> on the center of the platform — for example an accurately known 100&nbsp;g or 200&nbsp;g object.</li>
+<li>Read the raw change from zero.</li>
+<li>Adjust the calibration factor until <code>scale.get_units(10)</code> reports approximately that known weight.</li>
+<li>Repeat with the object removed and replaced several times.</li>
+</ol>
+
+<p>The final code will keep a configuration value such as:</p>
+<pre>
+float LOAD_CALIBRATION_FACTOR = -1234.5;   // EXAMPLE ONLY
+</pre>
+<p>Your real factor will be determined experimentally. Do not copy an Internet calibration factor because every load cell, HX711 and mechanical installation is different.</p>
+
+<h3>9.8 Establish the actual chamber thresholds</h3>
+<p>After calibration, measure the system you will really demonstrate:</p>
+
+<table>
+<tr><th>Test</th><th>Record</th><th>Use</th></tr>
+<tr><td>Empty chamber</td><td>10–20 readings</td><td>Determine zero/noise band</td></tr>
+<tr><td>One demonstration model/object</td><td>10–20 readings</td><td>Expected authorized occupancy band</td></tr>
+<tr><td>Two models or one model + extra object</td><td>10–20 readings</td><td>Abnormal/high-load reference</td></tr>
+<tr><td>Model leaves</td><td>Watch return to zero</td><td>Confirms chamber became empty</td></tr>
+</table>
+
+<p>Example only:</p>
+<pre>
+Empty:             0 ± 10 g
+One demo model:    220–280 g
+Two / extra load:  450–550 g
+</pre>
+<p>Your final values may be completely different.</p>
+
+<h3>9.9 How the load reading participates in security logic</h3>
+<table>
+<tr><th>IR / load situation</th><th>Interpretation</th><th>Gate B</th></tr>
+<tr><td>IR‑A entry seen + stable expected load</td><td>Normal evidence of one authorized passage</td><td>May proceed after Gate A CLOSED verification</td></tr>
+<tr><td>IR‑A entry seen + very high / abnormal load</td><td>Possible extra person/object</td><td><b>Remain closed</b></td></tr>
+<tr><td>Load rises but IR‑A never saw entry</td><td>Sensors disagree / unexpected chamber condition</td><td><b>Remain closed</b></td></tr>
+<tr><td>IR‑A saw entry but load stays near zero</td><td>Incomplete passage or load-cell fault</td><td><b>Remain closed</b></td></tr>
+<tr><td>After Gate B exit, load returns near zero</td><td>Chamber empty again</td><td>Gate B can finish closing/reset cycle</td></tr>
+<tr><td>After exit, significant load remains</td><td>Object/person may remain in chamber</td><td>Do not declare cycle complete</td></tr>
+</table>
+
+<h3>9.10 Make readings stable instead of reacting to one sample</h3>
+<p>The final code should average several samples and require the result to remain stable briefly. Do not trigger “Possible Tailgating” from a single noisy number. A simple beginner strategy is:</p>
+<pre>
+read 10 samples
+      ↓
+average
+      ↓
+compare with empty / expected / abnormal ranges
+      ↓
+require the condition for several consecutive checks
+</pre>
+
+<label class="check"><input type="checkbox" class="task"> HX711 gives repeatable raw readings, platform is mechanically free, empty chamber can be tared, and known weight can be calibrated.</label>
+</section>
+
+<section id="ir">
+<h2>10. Connect and position the two IR sensors</h2>
+
+<table>
+<tr><th>Sensor</th><th>VCC</th><th>GND</th><th>OUT</th><th>Position</th></tr>
+<tr><td>IR‑A</td><td>5V</td><td>GND</td><td>D7</td><td>Gate A / entrance to chamber</td></tr>
+<tr><td>IR‑B</td><td>5V</td><td>GND</td><td>D8</td><td>Gate B / exit from chamber</td></tr>
+<tr><td>Spare IR</td><td>Not connected</td><td>—</td><td>—</td><td>Keep as replacement</td></tr>
+</table>
+
+<p>Mount each FC‑51 close to the moving model. Turn its potentiometer slowly until the output changes reliably when the model passes but does not remain triggered by the opposite shoebox wall.</p>
+
+<div class="note">Record whether your module outputs LOW or HIGH when an obstacle is detected. Many common FC‑51 modules are active-low, but your code should use the behavior you actually measure.</div>
+<label class="check"><input type="checkbox" class="task"> IR‑A and IR‑B each show a repeatable CLEAR → BLOCKED → CLEAR transition.</label>
+</section>
+
+<section id="servo">
+<h2>11. Connect the two SG90 servos</h2>
+
+<table>
+<tr><th>Servo wire</th><th>Connect</th></tr>
+<tr><td>Brown / black</td><td>Separate servo GND rail</td></tr>
+<tr><td>Red</td><td>Separate servo +5&nbsp;V rail</td></tr>
+<tr><td>Orange / yellow</td><td>Servo A → UNO D5; Servo B → UNO D6</td></tr>
+</table>
+
+<div class="danger"><b>Do not power both SG90 servos from the UNO 5&nbsp;V pin.</b> Use the separate regulated servo source. TowerPro specifies external power for SG90-class servos; servo motion can create current transients that reset the UNO if the power arrangement is weak.</div>
+
+<h3>Mechanical alignment method</h3>
+<p>Before attaching the gate linkage, command each servo to the intended closed angle (for example 20°) and then install the horn. After that, determine a safe open angle (for example 90°). Do not assume the same angles will work for both gates.</p>
+
+<pre>
+#include &lt;Servo.h&gt;
+Servo gateA, gateB;
+
+void setup() {
+  gateA.attach(5);
+  gateB.attach(6);
+  gateA.write(20);   // adjust experimentally
+  gateB.write(20);   // adjust experimentally
+}
+void loop() {}
+</pre>
+
+<label class="check"><input type="checkbox" class="task"> Both servos move without resetting the UNO and without forcing the cardboard gates against their stops.</label>
+</section>
+
+<section id="limit">
+<h2>12. Use your one limit switch at Gate A CLOSED</h2>
+<p>The large SPDT switch should have <b>COM</b>, <b>NO</b>, and <b>NC</b>. Use COM and NO.</p>
+
+<table>
+<tr><th>Switch terminal</th><th>Connect</th></tr>
+<tr><td>COM</td><td>Common GND</td></tr>
+<tr><td>NO</td><td>UNO A1</td></tr>
+<tr><td>NC</td><td>Leave unconnected for this build</td></tr>
+</table>
+
+<p>Configure A1 as <code>INPUT_PULLUP</code>. With the gate not pressing the switch, A1 should read HIGH. When Gate A reaches the fully closed mechanical position and presses the switch, COM and NO close and A1 reads LOW.</p>
+
+<pre>
+pinMode(A1, INPUT_PULLUP);
+
+bool gateAClosedVerified() {
+  return digitalRead(A1) == LOW;
+}
+</pre>
+
+<p>Mount the switch so the gate presses it only at the true closed position. Do not position it where the servo horn can press it while the gate itself is still partly open.</p>
+
+<div class="warning">For the present prototype, the other gate positions are inferred from calibrated servo angles and timing. That is acceptable for development, not equivalent to the full four-switch specification.</div>
+<label class="check"><input type="checkbox" class="task"> A1 changes HIGH→LOW only when Gate A is physically closed.</label>
+</section>
+
+<section id="emergency">
+<h2>13. Wire the emergency-release button</h2>
+<p>Your receipt appears to show a four-pin tactile push switch. On most such switches, the two pins on one side are internally connected. Use a multimeter in continuity mode to identify one pin from each electrical side.</p>
+
+<table>
+<tr><th>Button side</th><th>Connect</th></tr>
+<tr><td>Side 1</td><td>UNO D2</td></tr>
+<tr><td>Opposite electrical side</td><td>GND</td></tr>
+</table>
+
+<p>Use <code>INPUT_PULLUP</code>, so normal = HIGH and pressed = LOW. No external 10&nbsp;kΩ resistor is required.</p>
+
+<pre>
+pinMode(2, INPUT_PULLUP);
+
+if (digitalRead(2) == LOW) {
+  // emergency:
+  // cancel normal sequence
+  // command both gates open
+  // sound alarm / show EMERGENCY
+}
+</pre>
+
+<div class="danger">This is an electrical prototype emergency release. If all electrical power is lost, an SG90 cannot move. A real access-control system would require a mechanical/fail-safe release strategy.</div>
+<label class="check"><input type="checkbox" class="task"> Emergency button is reachable from outside the shoebox and reliably reads LOW when pressed.</label>
+</section>
+
+<section id="buzzer">
+<h2>14. Connect the alarm buzzer — choose the simple method first</h2>
+
+<h3>Case A: 3-pin active buzzer module — recommended if this is what you already have</h3>
+<table>
+<tr><th>Buzzer module</th><th>Connect to</th></tr>
+<tr><td>VCC / +</td><td>LOGIC +5&nbsp;V rail</td></tr>
+<tr><td>GND / −</td><td>LOGIC GND rail</td></tr>
+<tr><td>S / SIG</td><td>UNO D9</td></tr>
+</table>
+<p>This is the lowest-complexity option. <b>Do not use the BC547 or 10&nbsp;kΩ resistors</b> if the module already accepts a logic signal.</p>
+
+<h3>Case B: bare 2-pin active buzzer</h3>
+<p>A transistor driver may be appropriate, but your current resistor purchase is 10&nbsp;kΩ. A typical small transistor driver normally uses a lower base resistor than that. Therefore, do not improvise this stage unless we confirm the exact buzzer current and choose the proper base resistor.</p>
+
+<div class="mini-diagram">5V ───────────── buzzer +
+buzzer - ────── BC547 collector
+BC547 emitter ─ GND
+UNO D9 ─ proper base resistor ─ BC547 base</div>
+
+<div class="success"><b>Recommended for this build:</b> if your existing buzzer is the normal 3-pin active module, connect it directly and keep both BC547 transistors and the 10&nbsp;kΩ resistors as spare parts.</div>
+</section>
+
+<section id="esp">
+<h2>15. ESP32‑AI‑CAM integration — included in the final system</h2>
+
+<div class="note"><b>Terminology:</b> “ESP32‑AI‑CAM” / “AI‑Thinker ESP32‑CAM” does not mean this project uses artificial intelligence. The board contains an ESP32, camera connector/module and Wi‑Fi capability. In this project it performs <b>camera + network monitoring only</b>.</div>
+
+<h3>15.1 What the ESP32 does</h3>
+<table>
+<tr><th>UNO remains responsible for</th><th>ESP32‑AI‑CAM is responsible for</th></tr>
+<tr><td>RFID verification</td><td>Camera initialization</td></tr>
+<tr><td>PIN verification</td><td>Taking an event photo</td></tr>
+<tr><td>Reading IR sensors</td><td>Connecting to Wi‑Fi</td></tr>
+<tr><td>Reading HX711/load cell</td><td>Serving a simple local web/status page</td></tr>
+<tr><td>Gate A and Gate B decisions</td><td>Displaying/forwarding UNO event messages</td></tr>
+<tr><td>Emergency release and fault handling</td><td>Optional Telegram/network notification</td></tr>
+</table>
+
+<div class="danger"><b>The ESP32 must never send a command that directly overrides the UNO interlock and opens Gate B.</b> If ESP32 crashes or Wi‑Fi disappears, the physical access-control sequence must still operate safely.</div>
+
+<h3>15.2 Use A2/A3 instead of UNO D0/D1</h3>
+<p>This final version moves UNO↔ESP communication to <b>SoftwareSerial on A2/A3</b>. This makes the project much easier because UNO hardware Serial remains available for USB programming and debugging.</p>
+
+<table>
+<tr><th>UNO side</th><th>Level conversion</th><th>ESP32‑AI‑CAM side</th></tr>
+<tr><td><b>A3 = UNO TX</b></td><td>A3 → CD4050 channel 5 input → channel 5 output</td><td><b>U0R / GPIO3 = ESP RX</b></td></tr>
+<tr><td><b>A2 = UNO RX</b></td><td>Direct connection</td><td><b>U0T / GPIO1 = ESP TX</b></td></tr>
+<tr><td>GND</td><td>Direct</td><td>GND</td></tr>
+</table>
+
+<p>Recommended UART speed for the UNO SoftwareSerial link: <b>9600 baud</b>. Camera/network operations happen internally on the ESP32 and do not require a high-speed UNO link.</p>
+
+<h3>15.3 CD4050 channel 5 connection</h3>
+<p>Channels 1–4 are already used by the RC522. Use the fifth channel for UNO→ESP32:</p>
+<pre>
+UNO A3 (5V logic TX)
+       │
+       ▼
+CD4050 pin 11  [input]
+CD4050 pin 12  [output at 3.3V-class level]
+       │
+       ▼
+ESP32-CAM U0R / GPIO3 / RX
+</pre>
+
+<p>ESP32 TX is already 3.3&nbsp;V logic:</p>
+<pre>
+ESP32-CAM U0T / GPIO1 / TX ─────────> UNO A2
+</pre>
+
+<h3>15.4 Power the ESP32‑AI‑CAM</h3>
+<p>The ESP32‑CAM board itself normally accepts <b>5&nbsp;V at its 5V pin</b> and performs onboard regulation. Do not attempt to run the camera board from the UNO 3.3&nbsp;V pin.</p>
+
+<p>Preferred order:</p>
+<ol>
+<li><b>Best:</b> a separate stable 5&nbsp;V branch from the power bank/source for the ESP32‑CAM, with common ground.</li>
+<li><b>Acceptable prototype test:</b> if your power-bank/UNO logic supply is strong and stable, ESP32 5V may share the logic 5&nbsp;V source. Watch for brownout/restarts.</li>
+<li><b>Avoid:</b> powering ESP32‑CAM from the noisy servo +5&nbsp;V breadboard rail unless no other option exists.</li>
+</ol>
+
+<div class="warning">If the ESP32 repeatedly prints brownout/reset messages, freezes when taking a photo, or resets when Wi‑Fi transmits, treat that as a power problem first.</div>
+
+<h3>15.5 Program the ESP32‑AI‑CAM separately before connecting it to the UNO</h3>
+<p>Many AI‑Thinker ESP32‑CAM boards do <b>not</b> have a built-in USB programmer. If yours has no USB programming connector, use an ESP32‑CAM‑MB programmer board or a USB‑to‑TTL adapter with 3.3&nbsp;V UART logic.</p>
+
+<h4>Typical UART flashing connections</h4>
+<table>
+<tr><th>USB‑TTL / programmer</th><th>ESP32‑CAM</th></tr>
+<tr><td>5V power</td><td>5V</td></tr>
+<tr><td>GND</td><td>GND</td></tr>
+<tr><td>TX</td><td>U0R / GPIO3 / RX</td></tr>
+<tr><td>RX</td><td>U0T / GPIO1 / TX</td></tr>
+<tr><td>GPIO0 → GND</td><td>Only during flashing/bootloader mode</td></tr>
+</table>
+
+<ol>
+<li>Connect GPIO0 to GND.</li>
+<li>Reset/power the board.</li>
+<li>Upload the ESP32 sketch.</li>
+<li>After upload, remove GPIO0 from GND.</li>
+<li>Reset/power-cycle again to run normally.</li>
+</ol>
+
+<div class="warning">Programmer board variants differ. If your ESP32‑CAM already has a USB/MB programming base, use that board's normal USB method instead of manually wiring an FTDI adapter.</div>
+
+<h3>15.6 First camera test: official CameraWebServer example</h3>
+<ol>
+<li>Install the <b>esp32 platform by Espressif Systems</b> using Arduino IDE Boards Manager.</li>
+<li>Select an AI‑Thinker ESP32‑CAM-compatible board entry.</li>
+<li>Open the ESP32 CameraWebServer example.</li>
+<li>Select/define <code>CAMERA_MODEL_AI_THINKER</code>.</li>
+<li>Enter your Wi‑Fi SSID and password.</li>
+<li>Upload, remove GPIO0‑to‑GND flashing connection, reset, and open Serial Monitor.</li>
+<li>The ESP32 should print its local IP address. Open that IP from a device on the same Wi‑Fi network and verify that the camera works.</li>
+</ol>
+
+<p>The current official Espressif Arduino camera example includes a dedicated <code>CAMERA_MODEL_AI_THINKER</code> pin mapping, so you should use that model definition rather than manually inventing camera GPIO numbers.</p>
+
+<h3>15.7 Final UNO→ESP event messages</h3>
+<p>Keep the serial protocol human-readable. The UNO can send one line for each important event:</p>
+<pre>
+READY
+AUTH_OK
+AUTH_DENIED
+ENTRY_DETECTED
+GATE_A_CLOSED
+CHAMBER_OK
+POSSIBLE_TAILGATING
+GATE_B_OPEN
+EXIT_DETECTED
+FAULT:A_NOT_CLOSED
+EMERGENCY
+</pre>
+
+<p>The ESP32 reads one line at a time and decides whether to update the web page, take a photo or send a notification. It does <b>not</b> alter the UNO state machine.</p>
+
+<h3>15.8 When should the ESP32 take a photo?</h3>
+<table>
+<tr><th>UNO event</th><th>Recommended camera action</th></tr>
+<tr><td>AUTH_OK</td><td>Optional photo; update status</td></tr>
+<tr><td>AUTH_DENIED</td><td>Photo useful</td></tr>
+<tr><td>POSSIBLE_TAILGATING</td><td><b>Take photo immediately</b> + network notification</td></tr>
+<tr><td>FAULT</td><td>Optional photo + fault status</td></tr>
+<tr><td>EMERGENCY</td><td>Photo + high-priority status/notification</td></tr>
+<tr><td>Normal idle</td><td>No constant photo capture required</td></tr>
+</table>
+
+<h3>15.9 Final connection rule</h3>
+<p>After the ESP32 is independently tested, disconnect its programmer, then connect the three project links:</p>
+<pre>
+ESP32 TX/U0T(GPIO1) ─────> UNO A2
+UNO A3 ──> CD4050 ───────> ESP32 RX/U0R(GPIO3)
+ESP32 GND ────────────────> COMMON GND
+</pre>
+
+<label class="check"><input type="checkbox" class="task"> ESP32 camera works independently, Wi‑Fi works, UART event link works at 9600 baud, and disconnecting ESP32 does not break UNO gate logic.</label>
+</section>
+
+
+<section id="setup">
+<h2>15A. Final UNO + ESP32 software setup before the complete code</h2>
+
+<h3>15A.1 Arduino UNO setup</h3>
+<ol>
+<li>Install Arduino IDE 2.x.</li>
+<li>Connect the UNO using USB.</li>
+<li>Select <b>Arduino AVR Boards → Arduino Uno</b>.</li>
+<li>Select the UNO serial/COM port.</li>
+<li>Upload <b>Blink</b> once to confirm the computer/board connection.</li>
+</ol>
+
+<h3>15A.2 UNO libraries</h3>
+<table>
+<tr><th>Library</th><th>Use</th><th>Source</th></tr>
+<tr><td><code>Wire.h</code></td><td>LCD + PCF8574 keypad scanning</td><td>Built in</td></tr>
+<tr><td><code>SPI.h</code></td><td>RC522</td><td>Built in</td></tr>
+<tr><td><code>Servo.h</code></td><td>Two SG90 gates</td><td>Built in</td></tr>
+<tr><td><code>SoftwareSerial.h</code></td><td>UNO A2/A3 UART to ESP32</td><td>Built in with the AVR Arduino core</td></tr>
+<tr><td><code>MFRC522</code></td><td>RFID UID reading</td><td>Install with Library Manager</td></tr>
+<tr><td><code>HX711</code></td><td>Load-cell readings</td><td>Install with Library Manager</td></tr>
+<tr><td><code>LiquidCrystal_I2C</code></td><td>16×2 LCD</td><td>Install a library compatible with your backpack</td></tr>
+</table>
+
+<div class="success">The planned complete UNO code will scan the PCF8574 keypad directly with <code>Wire</code>, so no separate Keypad_I2C library is required.</div>
+
+<h3>15A.3 ESP32‑AI‑CAM Arduino support</h3>
+<ol>
+<li>Open Arduino IDE Boards Manager.</li>
+<li>Install the <b>esp32</b> platform from Espressif Systems.</li>
+<li>Select the AI‑Thinker ESP32‑CAM-compatible board entry for the camera sketch.</li>
+<li>Test the official CameraWebServer example with <code>CAMERA_MODEL_AI_THINKER</code>.</li>
+<li>After the camera works, replace the example with the final project ESP32 sketch in the next coding stage.</li>
+</ol>
+
+<h3>15A.4 Values to collect before compiling the final project</h3>
+<table>
+<tr><th>Configuration</th><th>How to obtain it</th></tr>
+<tr><td>LCD I²C address</td><td>I²C scanner</td></tr>
+<tr><td>PCF8574 keypad address</td><td>I²C scanner; must differ from LCD</td></tr>
+<tr><td>Authorized RFID UID(s)</td><td>MFRC522 UID reader example</td></tr>
+<tr><td>Authorized PIN(s)</td><td>Choose simple test PIN such as 1234; each UID can have its own PIN</td></tr>
+<tr><td>Servo A closed/open angles</td><td>Servo calibration test</td></tr>
+<tr><td>Servo B closed/open angles</td><td>Servo calibration test</td></tr>
+<tr><td>IR active state</td><td>Digital test sketch</td></tr>
+<tr><td>HX711 calibration factor</td><td>Known-weight calibration</td></tr>
+<tr><td>Empty / expected / abnormal chamber ranges</td><td>Measure on final shoebox platform</td></tr>
+<tr><td>Wi‑Fi SSID/password</td><td>Your chosen router/mobile hotspot</td></tr>
+<tr><td>ESP32 web/notification mode</td><td>Local web page; optionally Telegram/network notifications</td></tr>
+</table>
+
+<h3>15A.5 Final serial definitions</h3>
+<pre>
+// UNO:
+SoftwareSerial espSerial(A2, A3);  // RX, TX
+espSerial.begin(9600);
+
+// ESP32:
+// Hardware Serial0 pins are used externally as:
+// U0R / GPIO3 = RX from CD4050
+// U0T / GPIO1 = TX to UNO A2
+</pre>
+
+<div class="warning">Do not connect UNO A3 directly to ESP32 RX. A3 is still a 5&nbsp;V UNO output, so its signal goes through CD4050 channel 5 first.</div>
+</section>
+
+<section id="tests">
+<h2>16. Test one subsystem at a time</h2>
+<p>Do not write the final program first. Bring the system up in this order:</p>
+
+<table>
+<tr><th>Test order</th><th>What must work before proceeding</th></tr>
+<tr><td>1. Power</td><td>UNO logic breadboard rail ≈5&nbsp;V, RC522/CD4050 row ≈3.3&nbsp;V, separate servo breadboard rail ≈5&nbsp;V, positives isolated, grounds common. Fuse is not required for this functional test.</td></tr>
+<tr><td>2. LCD + I²C scan</td><td>LCD and keypad PCF8574 appear at different addresses</td></tr>
+<tr><td>3. RC522</td><td>Known card UID prints reliably when card is tapped</td></tr>
+<tr><td>4. Keypad</td><td>Every key returns the correct symbol</td></tr>
+<tr><td>5. HX711</td><td>Stable empty reading; adding a known object changes reading repeatably</td></tr>
+<tr><td>6. IR‑A / IR‑B</td><td>Each changes state only when the model crosses its zone</td></tr>
+<tr><td>7. Servo A / B</td><td>Open and close angles found; no UNO resets</td></tr>
+<tr><td>8. Gate A closed switch</td><td>LOW only when Gate A is fully closed</td></tr>
+<tr><td>9. Emergency button</td><td>Immediately overrides normal state and opens both gates</td></tr>
+<tr><td>10. Buzzer</td><td>Alarm works independently</td></tr>
+<tr><td>11. Integrated core</td><td>Normal passage + denial + possible-tailgating recovery</td></tr>
+<tr><td>12. ESP32‑AI‑CAM</td><td>Camera + Wi‑Fi + UART event reception all work; disconnecting ESP still does not stop the UNO safety logic.</td></tr>
+</table>
+<label class="check"><input type="checkbox" class="task"> All individual subsystem tests completed before final integration.</label>
+</section>
+
+<section id="software">
+<h2>17. Final firmware structure</h2>
+<p>Use a state machine rather than a long sequence of <code>delay()</code> calls. This allows the emergency button and sensors to remain responsive.</p>
+
+<div class="diagram">
+<div class="flow">
+  <div class="node">IDLE</div><span class="arrow">→</span>
+  <div class="node">WAIT_PIN</div><span class="arrow">→</span>
+  <div class="node">OPEN_A</div><span class="arrow">→</span>
+  <div class="node">WAIT_ENTRY</div><span class="arrow">→</span>
+  <div class="node">CLOSE_A</div><span class="arrow">→</span>
+  <div class="node">CHECK_CHAMBER</div><span class="arrow">→</span>
+  <div class="node">OPEN_B</div><span class="arrow">→</span>
+  <div class="node">WAIT_EXIT</div><span class="arrow">→</span>
+  <div class="node">CLOSE_B</div>
+</div>
+</div>
+
+<h3>Core pin constants</h3>
+<pre>
+const byte PIN_EMERGENCY = 2;
+const byte PIN_HX_DT     = 3;
+const byte PIN_HX_SCK    = 4;
+const byte PIN_SERVO_A   = 5;
+const byte PIN_SERVO_B   = 6;
+const byte PIN_IR_A      = 7;
+const byte PIN_IR_B      = 8;
+const byte PIN_BUZZER    = 9;
+const byte PIN_RFID_SS   = 10;
+const byte PIN_RFID_RST  = A0;
+const byte PIN_A_CLOSED  = A1;
+const byte PIN_ESP_RX      = A2;   // UNO receives from ESP32 TX
+const byte PIN_ESP_TX      = A3;   // UNO transmits through CD4050 to ESP32 RX
+
+// SPI: D11 MOSI, D12 MISO, D13 SCK
+// I2C: A4 SDA, A5 SCL
+</pre>
+
+<h3>Recommended decision rules</h3>
+<table>
+<tr><th>Condition</th><th>Action</th></tr>
+<tr><td>Unknown RFID</td><td>Keep both gates closed; show “CARD DENIED”; short alarm indication.</td></tr>
+<tr><td>Known RFID + wrong PIN</td><td>Keep both gates closed; clear entered PIN; optionally limit retries.</td></tr>
+<tr><td>Known RFID + correct PIN</td><td>Only start one Gate A passage cycle.</td></tr>
+<tr><td>Gate A entrance detected</td><td>Wait for IR‑A to clear and load-cell reading to stabilize before closing A.</td></tr>
+<tr><td>Gate A commanded closed but A1 never becomes LOW before timeout</td><td>FAULT: keep Gate B closed; stop/reopen Gate A as appropriate; alarm.</td></tr>
+<tr><td>Load/IR pattern is normal</td><td>Permit Gate B only after A‑CLOSED verification.</td></tr>
+<tr><td>Repeated IR‑A, long obstruction, abnormal load, or contradictory readings</td><td>Log/display <b>“Possible Tailgating”</b>; Gate B stays closed; alarm; reopen A for safe return.</td></tr>
+<tr><td>IR‑B blocked while closing Gate B</td><td>Reopen/hold B to avoid trapping the exiting model/person.</td></tr>
+<tr><td>Emergency button</td><td>Highest priority: open both gates and enter EMERGENCY state; no automatic normal resume.</td></tr>
+</table>
+
+<div class="note"><b>Do not classify weight as “two people detected.”</b> Weight is only one clue. Use the wording <b>Possible Tailgating</b> or <b>Unexpected Chamber Condition</b>.</div>
+</section>
+
+<section id="calibration">
+<h2>18. Calibration procedure</h2>
+
+<h3>A. Servo angles</h3>
+<p>Find four software angles: A_CLOSED_ANGLE, A_OPEN_ANGLE, B_CLOSED_ANGLE, B_OPEN_ANGLE. Start conservatively and adjust in 2–5° increments. The cardboard gate should reach its end position without the servo buzzing continuously.</p>
+
+<h3>B. Gate A closed switch</h3>
+<p>Adjust the switch position until it activates only at the final closed position. After 20 repeated open/close cycles, A1 should report closed every time.</p>
+
+<h3>C. IR sensors</h3>
+<p>Test with the actual model/object used for the presentation. Set each FC‑51 sensitivity so the opposite wall does not cause a permanent detection.</p>
+
+<h3>D. Load cell</h3>
+<p>First record the empty platform reading and tare it to zero. Then place one known demonstration object and record its stable weight. Repeat at least 10 times. Your “acceptable chamber” range should be wide enough to tolerate noise but narrow enough to notice a clearly heavier second object.</p>
+
+<div class="warning">Example numbers such as 250&nbsp;g for one model and 500&nbsp;g for two are only examples. Use your measured values. Do not hard-code an arbitrary threshold before calibration.</div>
+
+<h3>E. Timing</h3>
+<p>Measure how long a normal model takes to enter and exit. Set timeouts comfortably above normal passage, but not so long that a stuck sequence persists indefinitely.</p>
+</section>
+
+<section id="demo">
+<h2>19. Final demo sequence</h2>
+
+<table>
+<tr><th>Demo</th><th>Expected behavior</th></tr>
+<tr><td>Power-on / safe restart</td><td>Both gates move/settle to known safe positions; system checks sensors; LCD shows ready only if no critical fault.</td></tr>
+<tr><td>Valid card + correct PIN</td><td>A opens, entry detected, A closes, A‑CLOSED verified, chamber accepted, B opens, exit detected, B closes.</td></tr>
+<tr><td>Unknown card</td><td>No gate movement; denial on LCD.</td></tr>
+<tr><td>Correct card + wrong PIN</td><td>No gate movement; denial/retry behavior.</td></tr>
+<tr><td>Possible tailgating / heavy second object</td><td>B remains closed; alarm; LCD says “Possible Tailgating”; A can reopen for safe return.</td></tr>
+<tr><td>Gate A closure failure</td><td>If A1 does not confirm closed before timeout, B never opens.</td></tr>
+<tr><td>IR obstruction</td><td>Do not close a gate onto an obstruction; hold/reopen and retry or fault.</td></tr>
+<tr><td>ESP32‑AI‑CAM event monitoring</td><td>Camera/network receives UNO events and reacts as configured. Then temporarily disconnect ESP32 and verify that core UNO gate logic still continues safely.</td></tr>
+<tr><td>Emergency release</td><td>Both gates open; system enters emergency state and requires deliberate recovery/reset.</td></tr>
+</table>
+</section>
+
+<section id="upgrade">
+<h2>20. Optional future improvements — not required for this version</h2>
+
+<div class="todo"><b>More gate-position switches.</b><br>
+Your current design uses the one available switch for Gate A CLOSED. Three additional switches could later verify A‑OPEN, B‑OPEN and B‑CLOSED, but they are not required to build the current simplified prototype.</div>
+
+<div class="todo" style="margin-top:10px"><b>Fuse.</b><br>
+The holder can remain unused. When the correct 5×20&nbsp;mm fuse is available and its rating is chosen for your servo-power source, place it in series with servo-source positive before the rocker switch.</div>
+
+<div class="todo" style="margin-top:10px"><b>Permanent wiring.</b><br>
+After the breadboard version works reliably, you may move only the power distribution and mechanically weak connections to perfboard, screw terminals or soldered joints. This is an optional reliability upgrade.</div>
+
+<div class="note"><b>RTC and microSD are not part of this project version.</b> Do not add them unless you later decide you want local timestamped logging.</div>
+</section>
+
+<section>
+<h2>Reference notes used for the final wiring choices</h2>
+<p class="muted">
+The ElectronicsBD listing for the purchased 1&nbsp;kg load cell identifies it as a 4-wire device and lists Red=VCC, Black=GND, White=Output+, Green=Output−; the seller also recommends the HX711. Their HX711 listing identifies the module as a 5&nbsp;V, 24-bit ADC/amplifier suitable for 4-wire differential load cells. Espressif's current Arduino-ESP32 documentation recommends installing the ESP32 platform through Boards Manager, and the official CameraWebServer source includes a dedicated <code>CAMERA_MODEL_AI_THINKER</code> pin mapping. These references are why this guide uses the stated load-cell/HX711 wiring and the official AI-Thinker camera model instead of manually assigning camera pins.
+</p>
+<p class="muted">
+Reference URLs:<br>
+https://electronics.com.bd/load-cell-sensor-1kg<br>
+https://electronics.com.bd/hx711-module-load-cell-voltage-amplifier<br>
+https://docs.espressif.com/projects/arduino-esp32/en/latest/installing.html<br>
+https://github.com/espressif/arduino-esp32/tree/master/libraries/ESP32/examples/Camera/CameraWebServer
+</p>
+</section>
+
+</main>
+</div>
+
+<footer>
+Final low-voltage tabletop prototype guide: Arduino UNO is the primary safety controller; ESP32‑AI‑CAM is included for camera/Wi‑Fi/event monitoring; RTC and microSD are intentionally omitted. Dedicated breadboard rails replace a separate power-distribution board, and the missing fuse does not prevent operation. Verify every rail with the multimeter and test each subsystem before final integration.
+</footer>
+
+<script>
+const tasks=[...document.querySelectorAll('.task')];
+const key='gateGuideChecksV1';
+try{
+  const saved=JSON.parse(localStorage.getItem(key)||'[]');
+  tasks.forEach((t,i)=>t.checked=!!saved[i]);
+}catch(e){}
+function update(){
+  const n=tasks.filter(t=>t.checked).length;
+  document.getElementById('bar').style.width=(tasks.length?100*n/tasks.length:0)+'%';
+  localStorage.setItem(key,JSON.stringify(tasks.map(t=>t.checked)));
+}
+tasks.forEach(t=>t.addEventListener('change',update));
+update();
+</script>
+</body>
+</html>
