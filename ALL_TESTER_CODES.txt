@@ -1,0 +1,27 @@
+ANTI-TAILGATING SECURITY INTERLOCK GATE - TEST SKETCH INDEX
+===========================================================
+
+The canonical tester code is stored in the numbered Arduino sketches under
+tests/. Keeping each sketch in a same-named folder lets the Arduino IDE open
+and compile it directly without maintaining duplicate source copies.
+
+Run the sketches in numeric order:
+
+01  tests/01_i2c_scanner/01_i2c_scanner.ino
+02  tests/02_lcd_test/02_lcd_test.ino
+03  tests/03_pcf8574_keypad_test/03_pcf8574_keypad_test.ino
+04  tests/04_rc522_uid_reader/04_rc522_uid_reader.ino
+05  tests/05_ir_sensor_test/05_ir_sensor_test.ino
+06  tests/06_limit_switch_test/06_limit_switch_test.ino
+07  tests/07_emergency_button_test/07_emergency_button_test.ino
+08  tests/08_buzzer_test/08_buzzer_test.ino
+09  tests/09_servo_calibration/09_servo_calibration.ino
+10  tests/10_hx711_raw_test/10_hx711_raw_test.ino
+11  tests/11_hx711_calibration/11_hx711_calibration.ino
+12A tests/12_uno_esp32_uart_test/uno_side/uno_uart_test.ino
+12B tests/12_uno_esp32_uart_test/esp32_side/esp32_uart_test.ino
+13  tests/13_esp32_camera_wifi_test/13_esp32_camera_wifi_test.ino
+
+See docs/TESTING_ORDER.md for prerequisites, expected results, and the values
+that must be copied into the final firmware after hardware calibration.
+

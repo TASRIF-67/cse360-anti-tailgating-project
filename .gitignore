@@ -1,0 +1,19 @@
+# Arduino build output and local editor metadata
+build/
+*.elf
+*.hex
+*.bin
+*.map
+*.eep
+*.o
+*.d
+.vscode/
+.idea/
+*.swp
+*.tmp
+
+# Operating-system metadata
+.DS_Store
+Thumbs.db
+desktop.ini
+
